@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -78,6 +79,12 @@ public class ComplaintController {
         
         Complaint saved = complaintRepository.save(complaint);
         return ResponseEntity.ok(new ComplaintResponse("Complaint submitted successfully", saved.getId()));
+    }
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Complaint>> getUserComplaints(@PathVariable Long userId) {
+        List<Complaint> complaints = complaintRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        return ResponseEntity.ok(complaints);
     }
 
     
