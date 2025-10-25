@@ -61,7 +61,7 @@ public class ComplaintController {
                         Path filePath = Paths.get(uploadDir + fileName);
                         Files.write(filePath, file.getBytes());
                         
-                        if (filePaths.length() > 0) {
+                        if (!filePaths.isEmpty()) {
                             filePaths.append(",");
                         }
                         filePaths.append(fileName);
@@ -71,7 +71,7 @@ public class ComplaintController {
                 }
             }
             
-            if (filePaths.length() > 0) {
+            if (!filePaths.isEmpty()) {
                 complaint.setAttachmentPath(filePaths.toString());
             }
         }

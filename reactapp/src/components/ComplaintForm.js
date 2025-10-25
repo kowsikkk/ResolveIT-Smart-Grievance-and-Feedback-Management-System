@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosConfig';
 import './ComplaintForm.css';
 
 const ComplaintForm = ({ userId, onBack }) => {
@@ -35,7 +35,7 @@ const ComplaintForm = ({ userId, onBack }) => {
         formData.append('files', file);
       });
       
-      await axios.post('http://localhost:8080/api/complaints/submit', formData, {
+      await api.post('/api/complaints/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

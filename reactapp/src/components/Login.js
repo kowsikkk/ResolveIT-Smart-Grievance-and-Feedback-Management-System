@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/axiosConfig';
 import './Login.css';
 
 const Login = ({ onLogin, onSwitchToRegister }) => {
@@ -11,13 +11,15 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
+      const response = await api.post('/api/auth/login', {
         username,
         password,
         role
       });
       
-      if (response.data.userId) {
+      if (response.data.userId && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userId', response.data.userId);
         onLogin(response.data.userId);
       }
     } catch (error) {

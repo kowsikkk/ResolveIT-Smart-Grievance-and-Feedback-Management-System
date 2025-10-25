@@ -2,6 +2,7 @@ package org.example.springapp.controller;
 
 import org.example.springapp.entity.User;
 import org.example.springapp.repository.UserRepository;
+import org.example.springapp.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,9 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private JwtUtil jwtUtil;
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         System.out.println("Login request received: " + request.username);
@@ -27,7 +31,8 @@ public class AuthController {
         Optional<User> user = userRepository.findByUsername(request.username);
         
         if (user.isPresent() && user.get().getPassword().equals(request.password) && user.get().getRole().equals(request.role)) {
-            return ResponseEntity.ok(new LoginResponse("Login successful", user.get().getId()));
+            String token = jwtUtil.generateToken(user.get().getUsername(), user.get().getRole());
+            return ResponseEntity.ok(new LoginResponse("Login successful", user.get().getId(), token));
         }
         
         return ResponseEntity.badRequest().body(new LoginResponse("Invalid credentials or role", null));
@@ -46,7 +51,8 @@ public class AuthController {
         user.setRole(request.role);
         
         User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(new LoginResponse("Registration successful", savedUser.getId()));
+        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getRole());
+        return ResponseEntity.ok(new LoginResponse("Registration successful", savedUser.getId(), token));
     }
     
     static class LoginRequest {
@@ -67,10 +73,17 @@ public class AuthController {
     static class LoginResponse {
         public String message;
         public Long userId;
+        public String token;
         
         public LoginResponse(String message, Long userId) {
             this.message = message;
             this.userId = userId;
+        }
+        
+        public LoginResponse(String message, Long userId, String token) {
+            this.message = message;
+            this.userId = userId;
+            this.token = token;
         }
 
     }
