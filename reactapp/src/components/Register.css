@@ -1,0 +1,144 @@
+.register-container {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(45deg, #2c3e50 0%, #34495e 100%);
+}
+
+.register-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 40px;
+}
+
+.register-welcome {
+  text-align: center;
+  max-width: 400px;
+}
+
+.register-welcome h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+.register-welcome p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.register-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 40px;
+}
+
+.register-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.register-form h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.register-form h3 {
+  color: #666;
+  margin-bottom: 40px;
+  text-align: center;
+  font-weight: normal;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #2c3e50;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  background: white;
+}
+
+.register-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(45deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.register-btn:hover {
+  transform: translateY(-2px);
+}
+
+.switch-form {
+  text-align: center;
+  margin-top: 30px;
+  color: #666;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #2c3e50;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #fdf2f2;
+  border-radius: 4px;
+  font-size: 14px;
+}
