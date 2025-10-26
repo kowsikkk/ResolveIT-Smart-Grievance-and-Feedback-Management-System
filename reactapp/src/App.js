@@ -8,11 +8,11 @@ import './App.css';
 function App() {
   const [userId, setUserId] = useState(sessionStorage.getItem('userId'));
   const [currentView, setCurrentView] = useState(() => {
-    const hasAuth = sessionStorage.getItem('userId') && sessionStorage.getItem('token');
+    const hasAuth = sessionStorage.getItem('userId');
     const savedView = sessionStorage.getItem('currentView');
     
     if (hasAuth && savedView && (savedView === 'dashboard' || savedView === 'complaint' || savedView === 'profile')) {
-      return savedView === 'profile' ? 'dashboard' : savedView;
+      return savedView;
     }
     return hasAuth ? 'dashboard' : 'login';
   });
@@ -64,7 +64,7 @@ function App() {
 
   return (
     <div className="App">
-      {currentView === 'dashboard' ? (
+      {(currentView === 'dashboard' || currentView === 'profile') ? (
         <Dashboard 
           userId={userId} 
           onLogout={handleLogout} 
