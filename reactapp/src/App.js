@@ -6,27 +6,44 @@ import Dashboard from './components/Dashboard';
 import './App.css';
 
 function App() {
-  const [userId, setUserId] = useState(localStorage.getItem('userId'));
-  const [currentView, setCurrentView] = useState(localStorage.getItem('userId') && localStorage.getItem('token') ? 'dashboard' : 'login');
+  const [userId, setUserId] = useState(sessionStorage.getItem('userId'));
+  const [currentView, setCurrentView] = useState(() => {
+    const hasAuth = sessionStorage.getItem('userId') && sessionStorage.getItem('token');
+    const savedView = sessionStorage.getItem('currentView');
+    
+    if (hasAuth && savedView && (savedView === 'dashboard' || savedView === 'complaint' || savedView === 'profile')) {
+      return savedView === 'profile' ? 'dashboard' : savedView;
+    }
+    return hasAuth ? 'dashboard' : 'login';
+  });
   const [showRegister, setShowRegister] = useState(false);
+
+
+
+  useEffect(() => {
+    if (currentView !== 'login' && !showRegister && sessionStorage.getItem('userId')) {
+      sessionStorage.setItem('currentView', currentView);
+    }
+  }, [currentView, showRegister]);
 
   const handleLogin = (id) => {
     setUserId(id);
-    localStorage.setItem('userId', id);
+    sessionStorage.setItem('userId', id);
     setCurrentView('dashboard');
   };
 
   const handleRegister = (id) => {
     setUserId(id);
-    localStorage.setItem('userId', id);
+    sessionStorage.setItem('userId', id);
     setCurrentView('dashboard');
   };
 
   const handleLogout = () => {
     setCurrentView('login');
     setUserId(null);
-    localStorage.removeItem('userId');
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('currentView');
   };
 
   const handleCreateComplaint = () => {
@@ -48,7 +65,12 @@ function App() {
   return (
     <div className="App">
       {currentView === 'dashboard' ? (
-        <Dashboard userId={userId} onLogout={handleLogout} onCreateComplaint={handleCreateComplaint} />
+        <Dashboard 
+          userId={userId} 
+          onLogout={handleLogout} 
+          onCreateComplaint={handleCreateComplaint}
+          initialView={sessionStorage.getItem('currentView')}
+        />
       ) : currentView === 'complaint' ? (
         <ComplaintForm userId={userId} onBack={handleBackToDashboard} />
       ) : showRegister ? (

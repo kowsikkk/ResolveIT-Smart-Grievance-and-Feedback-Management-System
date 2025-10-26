@@ -18,8 +18,8 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
       });
       
       if (response.data.userId && response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
+        sessionStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('userId', response.data.userId);
         onLogin(response.data.userId);
       }
     } catch (error) {
