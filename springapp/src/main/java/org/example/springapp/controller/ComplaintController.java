@@ -86,6 +86,15 @@ public class ComplaintController {
         List<Complaint> complaints = complaintRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return ResponseEntity.ok(complaints);
     }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<Complaint> getComplaintById(@PathVariable Long id) {
+        Complaint complaint = complaintRepository.findById(id).orElse(null);
+        if (complaint == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(complaint);
+    }
 
     
     static class ComplaintResponse {

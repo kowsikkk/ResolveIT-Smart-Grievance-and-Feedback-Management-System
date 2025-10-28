@@ -27,6 +27,15 @@ public class Complaint {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
+    @Column
+    private String status = "Complaint Submitted";
+    
+    @Column
+    private String priority = "Medium";
+    
+    @Column
+    private String category = "General";
+    
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

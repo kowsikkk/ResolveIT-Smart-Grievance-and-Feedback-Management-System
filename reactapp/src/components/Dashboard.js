@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/axiosConfig';
+import ComplaintStatus from './ComplaintStatus';
 import './Dashboard.css';
 
 const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initialView }) => {
@@ -8,6 +9,7 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
   const [showProfile, setShowProfile] = useState(() => {
     return sessionStorage.getItem('currentView') === 'profile';
   });
+  const [selectedComplaintId, setSelectedComplaintId] = useState(null);
   const [message, setMessage] = useState(successMessage || '');
 
   useEffect(() => {
@@ -47,6 +49,10 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
     return <Profile user={user} onBack={() => setShowProfile(false)} onLogout={onLogout} />;
   }
 
+  if (selectedComplaintId) {
+    return <ComplaintStatus complaintId={selectedComplaintId} onBack={() => setSelectedComplaintId(null)} />;
+  }
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -77,7 +83,7 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
               <p>No complaints found</p>
             ) : (
               complaints.map(complaint => (
-                <div key={complaint.id} className="complaint-item">
+                <div key={complaint.id} className="complaint-item" onClick={() => setSelectedComplaintId(complaint.id)}>
                   <h3>{complaint.subject}</h3>
                   <div className="complaint-meta">
                     <div className="meta-left">
