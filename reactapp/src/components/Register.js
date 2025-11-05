@@ -38,7 +38,14 @@ const Register = () => {
         navigate('/dashboard');
       }
     } catch (error) {
-      setError(error.response?.data?.message || 'Registration failed');
+      if (error.response?.status === 409) {
+        setError('Username or email already exists.');
+      } else if (error.response?.status === 400) {
+        setError('Invalid data. Please check all fields.');
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+      setTimeout(() => setError(''), 4000);
     }
   };
 
@@ -102,7 +109,7 @@ const Register = () => {
             </select>
           </div>
           
-          {error && <div className="error">{error}</div>}
+          {error && <div className="erroris">{error}</div>}
           {successMessage && <div className="success">{successMessage}</div>}
           
           <button type="submit" className="register-btn">Register</button>

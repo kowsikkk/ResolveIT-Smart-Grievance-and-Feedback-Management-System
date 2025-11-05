@@ -43,7 +43,14 @@ const Login = () => {
         }
       }
     } catch (error) {
-      setError('Invalid credentials');
+      if (error.response?.status === 401) {
+        setError('Invalid username, password, or role.');
+      } else if (error.response?.status === 404) {
+        setError('User not found. Please check your credentials.');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+      setTimeout(() => setError(''), 4000);
     }
   };
 
@@ -90,7 +97,7 @@ const Login = () => {
             </select>
           </div>
           
-          {error && <div className="error">{error}</div>}
+          {error && <div className="erroris">{error}</div>}
           {successMessage && <div className="success">{successMessage}</div>}
           
           <div className="forgot-password">

@@ -8,6 +8,7 @@ const AdminDashboard = () => {
   const [officers, setOfficers] = useState([]);
   const [stats, setStats] = useState({ total: 0, new: 0, inProgress: 0, resolved: 0 });
   const [filter, setFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -15,16 +16,19 @@ const AdminDashboard = () => {
     fetchComplaints();
     fetchOfficers();
     fetchStats();
-  }, [filter]);
+  }, [filter, priorityFilter]);
 
   const fetchComplaints = async () => {
     try {
       const response = await api.get('/api/admin/complaints');
-      if (filter === 'all') {
-        setComplaints(response.data);
-      } else {
-        setComplaints(response.data.filter(c => c.status === filter));
+      let filteredComplaints = response.data;
+      if (filter !== 'all') {
+        filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
+      if (priorityFilter !== 'all') {
+        filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
+      }
+      setComplaints(filteredComplaints);
     } catch (error) {
       console.error('Error fetching complaints from database:', error);
       
@@ -91,11 +95,14 @@ const AdminDashboard = () => {
         }
       ];
       
-      if (filter === 'all') {
-        setComplaints(demoComplaints);
-      } else {
-        setComplaints(demoComplaints.filter(c => c.status === filter));
+      let filteredComplaints = demoComplaints;
+      if (filter !== 'all') {
+        filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
+      if (priorityFilter !== 'all') {
+        filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
+      }
+      setComplaints(filteredComplaints);
     }
   };
 
@@ -203,12 +210,20 @@ const AdminDashboard = () => {
         <div className="dashboard-card">
           <div className="card-header">
             <h2>All Complaints ({complaints.length})</h2>
-            <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
-              <option value="all">All Status</option>
-              <option value="NEW">NEW</option>
-              <option value="IN PROGRESS">IN PROGRESS</option>
-              <option value="Resolved">Resolved</option>
-            </select>
+            <div className="filter-controls">
+              <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
+                <option value="all">All Status</option>
+                <option value="NEW">NEW</option>
+                <option value="IN PROGRESS">IN PROGRESS</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+              <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="filter-select">
+                <option value="all">All Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
           </div>
           
           <div className="complaints-list">

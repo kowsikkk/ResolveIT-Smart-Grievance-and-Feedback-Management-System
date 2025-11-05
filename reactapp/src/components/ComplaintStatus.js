@@ -221,7 +221,7 @@ const ComplaintStatus = () => {
       <div className="status-content">
         <div className="complaint-form-section">
           <div className="section-header">
-            <h3>Complaint Details</h3>
+            <h3>📋 Complaint Details</h3>
             <div className="action-buttons">
               {!isEditing && canEdit && (
                 <button onClick={handleEdit} className="edit-btn">
@@ -238,53 +238,75 @@ const ComplaintStatus = () => {
           
           {message && <div className="message success">{message}</div>}
           
-          <div className="form-field">
-            <label>Complaint Title</label>
-            <input 
-              type="text" 
-              value={isEditing ? editedComplaint.title : (complaint.title || complaint.subject)} 
-              onChange={(e) => setEditedComplaint(prev => ({ ...prev, title: e.target.value }))}
-              readOnly={!isEditing}
-            />
-          </div>
+          <div className="complaint-details-grid">
+            <div className="form-field">
+              <label>Complaint Title</label>
+              <input 
+                type="text" 
+                value={isEditing ? editedComplaint.title : (complaint.title || complaint.subject)} 
+                onChange={(e) => setEditedComplaint(prev => ({ ...prev, title: e.target.value }))}
+                readOnly={!isEditing}
+              />
+            </div>
 
-          <div className="form-field">
-            <label>Description</label>
-            <textarea 
-              value={isEditing ? editedComplaint.description : complaint.description} 
-              onChange={(e) => setEditedComplaint(prev => ({ ...prev, description: e.target.value }))}
-              readOnly={!isEditing} 
-              rows="4" 
-            />
-          </div>
+            <div className="form-field">
+              <label>Description</label>
+              <textarea 
+                value={isEditing ? editedComplaint.description : complaint.description} 
+                onChange={(e) => setEditedComplaint(prev => ({ ...prev, description: e.target.value }))}
+                readOnly={!isEditing} 
+                rows="4" 
+              />
+            </div>
 
-          <div className="form-field">
-            <label>Category</label>
-            <select 
-              value={isEditing ? editedComplaint.category : (complaint.category || '')} 
-              onChange={(e) => setEditedComplaint(prev => ({ ...prev, category: e.target.value }))}
-              disabled={!isEditing}
-            >
-              <option value="Water">Water</option>
-              <option value="Electricity">Electricity</option>
-              <option value="Roads">Roads</option>
-              <option value="Sanitation">Sanitation</option>
-              <option value="Traffic">Traffic</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+            <div className="form-field">
+              <label>Category</label>
+              <select 
+                value={isEditing ? editedComplaint.category : (complaint.category || '')} 
+                onChange={(e) => setEditedComplaint(prev => ({ ...prev, category: e.target.value }))}
+                disabled={!isEditing}
+              >
+                <option value="Water">Water</option>
+                <option value="Electricity">Electricity</option>
+                <option value="Roads">Roads</option>
+                <option value="Sanitation">Sanitation</option>
+                <option value="Traffic">Traffic</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
 
-          <div className="form-field">
-            <label>Priority Level</label>
-            <select 
-              value={isEditing ? editedComplaint.priority : (complaint.priority || '')} 
-              onChange={(e) => setEditedComplaint(prev => ({ ...prev, priority: e.target.value }))}
-              disabled={!isEditing}
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </select>
+            <div className="form-field">
+              <label>Priority Level</label>
+              <select 
+                value={isEditing ? editedComplaint.priority : (complaint.priority || '')} 
+                onChange={(e) => setEditedComplaint(prev => ({ ...prev, priority: e.target.value }))}
+                disabled={!isEditing}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+
+            <div className="form-field">
+              <label>Submitted On</label>
+              <input type="text" value={formatDate(complaint.createdAt)} readOnly />
+            </div>
+
+            <div className="form-field">
+              <label>Current Status</label>
+              <input 
+                type="text" 
+                value={complaint.status || 'NEW'} 
+                readOnly 
+                style={{
+                  color: complaint.status === 'RESOLVED' ? '#4CAF50' : 
+                         complaint.status === 'IN PROGRESS' ? '#FF9800' : 
+                         complaint.status === 'WITHDRAWN' ? '#F44336' : '#2196F3',
+                  fontWeight: 'bold'
+                }}
+              />
+            </div>
           </div>
 
           {isEditing && (
@@ -300,7 +322,7 @@ const ComplaintStatus = () => {
 
           {complaint.files && complaint.files.length > 0 && (
             <div className="form-field">
-              <label>Attached Files</label>
+              <label>📎 Attached Files</label>
               <div className="file-list">
                 {complaint.files.map((file, index) => (
                   <div key={index} className="file-item">
@@ -310,82 +332,78 @@ const ComplaintStatus = () => {
               </div>
             </div>
           )}
-
-          <div className="form-field">
-            <label>Submitted On</label>
-            <input type="text" value={formatDate(complaint.createdAt)} readOnly />
-          </div>
         </div>
 
-        <div className="timeline-section">
-          <div className="timeline-header">
-            <span className="timeline-icon">📋</span>
-            <h3>Complaint Timeline</h3>
-          </div>
-          
-          <div className="timeline-container">
-            {getTimelineSteps().map((step, index) => (
-              <div key={index} className="timeline-step">
-                <div className="timeline-marker" style={{backgroundColor: step.color}}>
-                  {step.icon}
-                </div>
-                <div className="timeline-content">
-                  <div className="timeline-status" style={{color: step.color}}>
-                    {step.status}
+        <div className="progress-communication-wrapper">
+          <div className="timeline-section">
+            <div className="timeline-header">
+              <h3>Progress Timeline</h3>
+            </div>
+            
+            <div className="timeline-container">
+              {getTimelineSteps().map((step, index) => (
+                <div key={index} className="timeline-step">
+                  <div className="timeline-marker" style={{backgroundColor: step.color}}>
+                    {step.icon}
                   </div>
-                  <div className="timeline-title">{step.title}</div>
-                  <div className="timeline-date">
-                    {step.date}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="messages-section">
-          <div className="messages-header">
-            <span className="messages-icon">💬</span>
-            <h3>Communication</h3>
-          </div>
-          
-          <div className="messages-container">
-            {messages.length === 0 ? (
-              <p className="no-messages">No messages yet</p>
-            ) : (
-              messages.map(msg => (
-                <div key={msg.id} className="message-item">
-                  <div className="message-header">
-                    <div className="sender-info">
-                      <span className={`role-badge role-${msg.sender?.role}`}>{msg.sender?.role}</span>
+                  <div className="timeline-content">
+                    <div className="timeline-status" style={{color: step.color}}>
+                      {step.status}
                     </div>
-                    <span className="message-time">
-                      {new Date(msg.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
+                    <div className="timeline-title">{step.title}</div>
+                    <div className="timeline-date">
+                      {step.date}
+                    </div>
                   </div>
-                  <p className="message-content">{msg.content}</p>
                 </div>
-              ))
-            )}
+              ))}
+            </div>
           </div>
-          
-          <form onSubmit={handleSendMessage} className="send-message-form">
-            <textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Write a message..."
-              rows="3"
-              required
-            />
-            <button type="submit" className="send-btn">
-              📤 Send Message
-            </button>
-          </form>
+
+          <div className="messages-section">
+            <div className="messages-header">
+              <span className="messages-icon">💬</span>
+              <h3>Communication</h3>
+            </div>
+            
+            <div className="messages-container">
+              {messages.length === 0 ? (
+                <p className="no-messages">No messages yet</p>
+              ) : (
+                messages.map(msg => (
+                  <div key={msg.id} className="message-item">
+                    <div className="message-header">
+                      <div className="sender-info">
+                        <span className={`role-badge role-${msg.sender?.role}`}>{msg.sender?.role}</span>
+                      </div>
+                      <span className="message-time">
+                        {new Date(msg.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <p className="message-content">{msg.content}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <form onSubmit={handleSendMessage} className="send-message-form">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Write a message..."
+                rows="3"
+                required
+              />
+              <button type="submit" className="send-btn">
+                📤 Send Message
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
