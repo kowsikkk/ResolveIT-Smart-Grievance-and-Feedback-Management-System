@@ -58,11 +58,122 @@
   height: fit-content;
 }
 
-.complaint-form-section h3 {
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-header h3 {
   color: #f7fafc;
   font-size: 20px;
-  margin: 0 0 25px 0;
+  margin: 0;
   font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn, .withdraw-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.edit-btn {
+  background: #4299e1;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+
+.withdraw-btn {
+  background: #e53e3e;
+  color: white;
+}
+
+.withdraw-btn:hover {
+  background: #c53030;
+  transform: translateY(-1px);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.save-btn, .cancel-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.save-btn {
+  background: #48bb78;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+}
+
+.cancel-btn {
+  background: #718096;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #4a5568;
+  transform: translateY(-1px);
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.message.success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+/* Status badge styling for withdrawn complaints */
+.status-badge.status-withdrawn {
+  background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+  color: white;
+  border: 1px solid #718096;
+}
+
+/* Disable form when complaint is withdrawn */
+.complaint-form-section.withdrawn {
+  opacity: 0.7;
+}
+
+.complaint-form-section.withdrawn input,
+.complaint-form-section.withdrawn textarea,
+.complaint-form-section.withdrawn select {
+  background: rgba(255, 255, 255, 0.03);
+  cursor: not-allowed;
 }
 
 .form-field {
@@ -88,6 +199,33 @@
   color: #f7fafc;
   font-size: 14px;
   resize: vertical;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23a0aec0" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+  padding-right: 40px;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.form-field select option {
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  padding: 10px;
+  border: none;
+}
+
+.form-field select option:hover {
+  background-color: #4a5568 !important;
+}
+
+.form-field select option:checked,
+.form-field select option:focus {
+  background-color: #4299e1 !important;
+  color: white !important;
 }
 
 .form-field input:focus,
@@ -259,4 +397,180 @@
     height: 20px;
     font-size: 10px;
   }
+}
+.messages-section {
+  background: linear-gradient(145deg, #2d3748 0%, #1a202c 100%);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin-top: 32px;
+}
+
+.messages-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.messages-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #f7fafc;
+}
+
+.messages-icon {
+  font-size: 20px;
+}
+
+.messages-container {
+  padding: 24px 32px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-messages {
+  text-align: center;
+  color: #a0aec0;
+  font-style: italic;
+  margin: 20px 0;
+}
+
+.message-item {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #4299e1;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.message-header strong {
+  color: #f7fafc;
+  font-weight: 600;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.message-content {
+  margin: 0;
+  color: #cbd5e0;
+  line-height: 1.5;
+}
+
+.send-message-form {
+  padding: 24px 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.send-message-form textarea {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  margin-bottom: 16px;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f7fafc;
+}
+
+.send-message-form textarea::placeholder {
+  color: #a0aec0;
+}
+
+.send-message-form textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.send-btn {
+  padding: 12px 24px;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.send-btn:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+@media (max-width: 768px) {
+  .messages-header {
+    padding: 16px 20px;
+  }
+  
+  .messages-container {
+    padding: 16px 20px;
+  }
+  
+  .send-message-form {
+    padding: 16px 20px;
+  }
+}
+.sender-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-badge.role-admin {
+  background: linear-gradient(135deg, #fecaca 0%, #fee2e2 100%);
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.role-badge.role-officer {
+  background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%);
+  color: #2563eb;
+  border: 1px solid #93c5fd;
+}
+
+.role-badge.role-user {
+  background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
+  color: #16a34a;
+  border: 1px solid #86efac;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
 }

@@ -28,7 +28,7 @@ public class Complaint {
     private LocalDateTime createdAt = LocalDateTime.now();
     
     @Column
-    private String status = "Complaint Submitted";
+    private String status = "NEW";
     
     @Column
     private String priority = "Medium";
@@ -39,4 +39,8 @@ public class Complaint {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+    
+    @ManyToOne
+    @JoinColumn(name = "assigned_to")
+    private User assignedTo;
 }

@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/axiosConfig';
 import './Register.css';
 
-const Register = ({ onRegister, onSwitchToLogin }) => {
+const Register = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('user');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    const message = sessionStorage.getItem('successMessage');
+    if (message) {
+      setSuccessMessage(message);
+      sessionStorage.removeItem('successMessage');
+      setTimeout(() => setSuccessMessage(''), 5000);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,9 +32,10 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
       });
       
       if (response.data.userId && response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
-        onRegister(response.data.userId);
+        sessionStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('userId', response.data.userId);
+        sessionStorage.setItem('username', username);
+        navigate('/dashboard');
       }
     } catch (error) {
       setError(error.response?.data?.message || 'Registration failed');
@@ -90,13 +103,21 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
           </div>
           
           {error && <div className="error">{error}</div>}
+          {successMessage && <div className="success">{successMessage}</div>}
           
           <button type="submit" className="register-btn">Register</button>
           
           <div className="switch-form">
             Already have an account? 
-            <button type="button" onClick={onSwitchToLogin} className="link-btn">
+            <Link to="/login" className="link-btn">
               Login here
+            </Link>
+          </div>
+          
+          <div className="anonymous-option">
+            <p>Or submit a complaint without registration:</p>
+            <button type="button" onClick={() => navigate('/complaint', { state: { from: '/register' } })} className="anonymous-btn">
+              Submit Anonymous Complaint
             </button>
           </div>
         </form>

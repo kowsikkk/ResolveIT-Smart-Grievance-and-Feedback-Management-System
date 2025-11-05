@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/axiosConfig';
 import './ComplaintForm.css';
 
-const ComplaintForm = ({ userId, onBack }) => {
-  const [submissionType, setSubmissionType] = useState('Public');
+const ComplaintForm = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const userId = sessionStorage.getItem('userId');
+  const isAuthenticated = !!userId;
+  const originPage = location.state?.from || '/login';
+  const [submissionType] = useState(isAuthenticated ? 'Public' : 'Anonymous');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -22,17 +28,33 @@ const ComplaintForm = ({ userId, onBack }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!title || !description || !category || !priority) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
     try {
-      const formData = new FormData();
-      formData.append('subject', title);
-      formData.append('description', description);
-      formData.append('submissionType', submissionType);
-      formData.append('category', category);
-      formData.append('priority', priority);
+      const complaintData = {
+        subject: title,
+        description: description,
+        submissionType: submissionType,
+        category: category,
+        priority: priority,
+        status: 'NEW',
+        userId: submissionType === 'Public' && userId ? userId : null
+      };
       
-      if (submissionType === 'Public' && userId) {
-        formData.append('userId', userId);
-      }
+      // Debug log to verify data
+      console.log('Submitting complaint with data:', complaintData);
+      
+      const formData = new FormData();
+      Object.keys(complaintData).forEach(key => {
+        if (complaintData[key] !== null) {
+          formData.append(key, complaintData[key]);
+        }
+      });
       
       files.forEach(file => {
         formData.append('files', file);
@@ -44,16 +66,13 @@ const ComplaintForm = ({ userId, onBack }) => {
         }
       });
       
-      setSuccess('Complaint submitted successfully!');
-      setTitle('');
-      setDescription('');
-      setCategory('');
-      setPriority('');
-      setFiles([]);
-      setTimeout(() => {
-        setSuccess('');
-        onBack();
-      }, 2000);
+      if (isAuthenticated) {
+        sessionStorage.setItem('successMessage', 'Complaint submitted successfully!');
+        navigate('/dashboard');
+      } else {
+        sessionStorage.setItem('successMessage', 'Anonymous complaint submitted successfully!');
+        navigate(originPage);
+      }
     } catch (error) {
       console.error('Error submitting complaint:', error);
     }
@@ -63,7 +82,7 @@ const ComplaintForm = ({ userId, onBack }) => {
     <div className="complaint-container">
       <div className="complaint-form">
         <div className="header">
-          <button className="back-btn" onClick={onBack}>←</button>
+          <button className="back-btn" onClick={() => navigate(isAuthenticated ? '/dashboard' : originPage)}>←</button>
           <h2>Submit Complaint</h2>
         </div>
 
@@ -141,28 +160,11 @@ const ComplaintForm = ({ userId, onBack }) => {
               )}
             </div>
 
-            <div className="field-group">
-              <div className="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    value="Public"
-                    checked={submissionType === 'Public'}
-                    onChange={(e) => setSubmissionType(e.target.value)}
-                  />
-                  <span>Public</span>
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    value="Anonymous"
-                    checked={submissionType === 'Anonymous'}
-                    onChange={(e) => setSubmissionType(e.target.value)}
-                  />
-                  <span>Anonymous</span>
-                </label>
+            {!isAuthenticated && (
+              <div className="field-group">
+                <p className="anonymous-notice">You are submitting an anonymous complaint</p>
               </div>
-            </div>
+            )}
           </div>
 
           {success && <div className="success">{success}</div>}

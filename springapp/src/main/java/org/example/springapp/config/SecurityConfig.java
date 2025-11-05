@@ -29,6 +29,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/complaints/submit").permitAll()
+                .requestMatchers("/api/admin/**").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/complaints/**").authenticated()
                 .anyRequest().authenticated()

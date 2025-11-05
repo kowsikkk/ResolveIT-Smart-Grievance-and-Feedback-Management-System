@@ -1,37 +1,54 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/axiosConfig';
-import ComplaintStatus from './ComplaintStatus';
 import './Dashboard.css';
 
-const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initialView }) => {
+const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [complaints, setComplaints] = useState([]);
-  const [showProfile, setShowProfile] = useState(() => {
-    return sessionStorage.getItem('currentView') === 'profile';
-  });
-  const [selectedComplaintId, setSelectedComplaintId] = useState(null);
-  const [message, setMessage] = useState(successMessage || '');
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+  const userId = sessionStorage.getItem('userId');
 
   useEffect(() => {
     fetchUserData();
     fetchComplaints();
-    if (message) {
+    
+    // Check for success message from complaint submission
+    const successMsg = sessionStorage.getItem('successMessage');
+    if (successMsg) {
+      setMessage(successMsg);
+      sessionStorage.removeItem('successMessage');
       setTimeout(() => setMessage(''), 3000);
     }
-  }, [message]);
+  }, []);
 
   const fetchUserData = async () => {
     try {
       const response = await api.get(`/api/users/${userId}`);
       setUser(response.data);
+      
+      // Redirect admin users to admin dashboard
+      if (response.data.role === 'admin') {
+        navigate('/admin/dashboard');
+        return;
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
       // Use fallback data if API fails
-      setUser({ 
+      const userData = { 
         username: sessionStorage.getItem('username') || 'Demo User', 
         email: 'demo@example.com', 
         role: 'user' 
-      });
+      };
+      setUser(userData);
+      
+      // Check if user logged in as admin
+      const loginRole = sessionStorage.getItem('loginRole');
+      if (loginRole === 'admin') {
+        navigate('/admin/dashboard');
+        return;
+      }
     }
   };
 
@@ -45,24 +62,23 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
     }
   };
 
-  if (showProfile) {
-    return <Profile user={user} onBack={() => setShowProfile(false)} onLogout={onLogout} />;
-  }
+  const handleLogout = () => {
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('loginRole');
+    navigate('/login');
+  };
 
-  if (selectedComplaintId) {
-    return <ComplaintStatus complaintId={selectedComplaintId} onBack={() => setSelectedComplaintId(null)} />;
-  }
+
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>Dashboard</h1>
         <div className="header-actions">
-          <button onClick={() => {
-            setShowProfile(true);
-            sessionStorage.setItem('currentView', 'profile');
-          }} className="profile-btn">Profile</button>
-          <button onClick={onLogout} className="logout-btn">Logout</button>
+          <button onClick={() => navigate('/profile')} className="profile-btn">Profile</button>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
       </div>
 
@@ -71,7 +87,7 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
       <div className="dashboard-content">
         <div className="dashboard-card">
           <h2>Quick Actions</h2>
-          <button onClick={onCreateComplaint} className="create-complaint-btn">
+          <button onClick={() => navigate('/complaint')} className="create-complaint-btn">
             Create New Complaint
           </button>
         </div>
@@ -83,7 +99,7 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
               <p>No complaints found</p>
             ) : (
               complaints.map(complaint => (
-                <div key={complaint.id} className="complaint-item" onClick={() => setSelectedComplaintId(complaint.id)}>
+                <div key={complaint.id} className="complaint-item" onClick={() => navigate(`/complaint-status/${complaint.id}`)}>
                   <h3>{complaint.subject}</h3>
                   <div className="complaint-meta">
                     <div className="meta-left">
@@ -105,80 +121,6 @@ const Dashboard = ({ userId, onLogout, onCreateComplaint, successMessage, initia
   );
 };
 
-const Profile = ({ user, onBack, onLogout }) => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('success');
 
-  const handlePasswordReset = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('/api/users/reset-password', {
-        currentPassword,
-        newPassword
-      });
-      setMessage('Password updated successfully');
-      setMessageType('success');
-      setCurrentPassword('');
-      setNewPassword('');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setMessageType('error');
-      if (error.response?.data?.message) {
-        setMessage(error.response.data.message);
-      } else {
-        setMessage('Error updating password');
-      }
-      setTimeout(() => setMessage(''), 3000);
-    }
-  };
-
-  return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <button onClick={() => {
-          sessionStorage.setItem('currentView', 'dashboard');
-          onBack();
-        }} className="back-btn">← Back</button>
-        <h1>Profile</h1>
-        <button onClick={onLogout} className="logout-btn">Logout</button>
-      </div>
-
-      <div className="profile-content">
-        <div className="profile-card">
-          <h2>User Information</h2>
-          <div className="user-info">
-            <p><strong>Username:</strong> {user?.username || 'Not available'}</p>
-            <p><strong>Email:</strong> {user?.email || 'Not available'}</p>
-            <p><strong>Role:</strong> {user?.role || 'User'}</p>
-          </div>
-        </div>
-
-        <div className="profile-card">
-          <h2>Reset Password</h2>
-          <form onSubmit={handlePasswordReset}>
-            <input
-              type="password"
-              placeholder="Current Password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="New Password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-            <button type="submit">Update Password</button>
-          </form>
-          {message && <p className={`message ${messageType}`}>{message}</p>}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default Dashboard;

@@ -1,12 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/axiosConfig';
 import './Login.css';
 
-const Login = ({ onLogin, onSwitchToRegister }) => {
+const Login = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    const message = sessionStorage.getItem('successMessage');
+    if (message) {
+      setSuccessMessage(message);
+      sessionStorage.removeItem('successMessage');
+      setTimeout(() => setSuccessMessage(''), 5000);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +32,15 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
       if (response.data.userId && response.data.token) {
         sessionStorage.setItem('token', response.data.token);
         sessionStorage.setItem('userId', response.data.userId);
-        onLogin(response.data.userId);
+        sessionStorage.setItem('username', username);
+        sessionStorage.setItem('loginRole', role);
+        
+        // Redirect based on role
+        if (role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (error) {
       setError('Invalid credentials');
@@ -71,6 +91,7 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
           </div>
           
           {error && <div className="error">{error}</div>}
+          {successMessage && <div className="success">{successMessage}</div>}
           
           <div className="forgot-password">
             <a href="#forgot">Forgot Password?</a>
@@ -80,8 +101,15 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
           
           <div className="switch-form">
             Don't have an account? 
-            <button type="button" onClick={onSwitchToRegister} className="link-btn">
+            <Link to="/register" className="link-btn">
               Register here
+            </Link>
+          </div>
+          
+          <div className="anonymous-option">
+            <p>Or submit a complaint without login:</p>
+            <button type="button" onClick={() => navigate('/complaint', { state: { from: '/login' } })} className="anonymous-btn">
+              Submit Anonymous Complaint
             </button>
           </div>
         </form>

@@ -58,6 +58,13 @@
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
 
+/* Admin dashboard specific vertical layout */
+.admin-dashboard .dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
 .dashboard-card, .profile-card {
   background: linear-gradient(145deg, #2d3748 0%, #1a202c 100%);
   padding: 30px;
@@ -141,6 +148,7 @@
 .meta-left, .meta-right {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
 .user-info p {
@@ -225,4 +233,223 @@
   margin-bottom: 20px;
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+}
+
+/* Admin Dashboard Specific Styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+  display: block;
+  color: #a0aec0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  display: block;
+  color: #f7fafc;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.stat-value.new {
+  color: #4299e1;
+}
+
+.stat-value.assigned {
+  color: #ed8936;
+}
+
+.stat-value.resolved {
+  color: #48bb78;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-header h2 {
+  margin: 0;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #f7fafc;
+  font-size: 14px;
+}
+
+.filter-select option {
+  background: #2d3748;
+  color: #f7fafc;
+}
+
+.admin-complaint-item {
+  cursor: default;
+}
+
+.complaint-header {
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.complaint-header:hover h3 {
+  color: #4299e1;
+}
+
+.complaint-badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.priority-badge, .status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-badge.priority-high {
+  background: rgba(245, 101, 101, 0.2);
+  color: #f56565;
+  border: 1px solid #f56565;
+}
+
+.priority-badge.priority-medium {
+  background: rgba(237, 137, 54, 0.2);
+  color: #ed8936;
+  border: 1px solid #ed8936;
+}
+
+.priority-badge.priority-low {
+  background: rgba(72, 187, 120, 0.2);
+  color: #48bb78;
+  border: 1px solid #48bb78;
+}
+
+.status-badge.status-new {
+  background: rgba(66, 153, 225, 0.2);
+  color: #4299e1;
+  border: 1px solid #4299e1;
+}
+
+.status-badge.status-assigned {
+  background: rgba(237, 137, 54, 0.2);
+  color: #ed8936;
+  border: 1px solid #ed8936;
+}
+
+.status-badge.status-in-progress {
+  background: rgba(156, 81, 182, 0.2);
+  color: #9c51b6;
+  border: 1px solid #9c51b6;
+}
+
+.status-badge.status-resolved {
+  background: rgba(72, 187, 120, 0.2);
+  color: #48bb78;
+  border: 1px solid #48bb78;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-select {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #f7fafc;
+  font-size: 12px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.action-select option {
+  background: #2d3748;
+  color: #f7fafc;
+}
+
+.action-select:focus {
+  outline: none;
+  border-color: #4299e1;
+}
+
+.resolve-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+  flex: 1;
+}
+
+.resolve-btn:hover {
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+.resolve-btn svg {
+  stroke-width: 2.5;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .admin-actions {
+    flex-direction: column;
+  }
+  
+  .complaint-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
 }

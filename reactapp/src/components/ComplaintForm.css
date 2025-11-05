@@ -223,3 +223,15 @@
   box-shadow: 0 8px 25px rgba(66, 153, 225, 0.4);
   background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
 }
+
+.anonymous-notice {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+  padding: 12px 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  margin: 0;
+}

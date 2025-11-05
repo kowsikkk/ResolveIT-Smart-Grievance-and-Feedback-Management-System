@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -30,6 +31,12 @@ public class UserController {
                                                     userData.getEmail(), userData.getRole()));
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/officers")
+    public ResponseEntity<List<User>> getOfficers() {
+        List<User> officers = userRepository.findByRole("officer");
+        return ResponseEntity.ok(officers);
     }
 
     @PostMapping("/reset-password")
