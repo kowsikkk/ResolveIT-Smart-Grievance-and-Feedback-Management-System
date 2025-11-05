@@ -14,7 +14,7 @@ const Dashboard = () => {
     fetchUserData();
     fetchComplaints();
     
-    // Check for success message from complaint submission
+
     const successMsg = sessionStorage.getItem('successMessage');
     if (successMsg) {
       setMessage(successMsg);
@@ -28,14 +28,14 @@ const Dashboard = () => {
       const response = await api.get(`/api/users/${userId}`);
       setUser(response.data);
       
-      // Redirect admin users to admin dashboard
+
       if (response.data.role === 'admin') {
         navigate('/admin/dashboard');
         return;
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      // Use fallback data if API fails
+
       const userData = { 
         username: sessionStorage.getItem('username') || 'Demo User', 
         email: 'demo@example.com', 
@@ -43,7 +43,7 @@ const Dashboard = () => {
       };
       setUser(userData);
       
-      // Check if user logged in as admin
+
       const loginRole = sessionStorage.getItem('loginRole');
       if (loginRole === 'admin') {
         navigate('/admin/dashboard');

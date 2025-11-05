@@ -29,7 +29,7 @@ const ComplaintForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate required fields
+
     if (!title || !description || !category || !priority) {
       alert('Please fill in all required fields');
       return;
@@ -46,7 +46,7 @@ const ComplaintForm = () => {
         userId: submissionType === 'Public' && userId ? userId : null
       };
       
-      // Debug log to verify data
+
       console.log('Submitting complaint with data:', complaintData);
       
       const formData = new FormData();

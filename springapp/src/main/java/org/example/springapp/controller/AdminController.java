@@ -75,13 +75,11 @@ public class AdminController {
 
     @GetMapping("/complaints/{id}/notes")
     public ResponseEntity<List<String>> getComplaintNotes(@PathVariable Long id) {
-        // Return empty list for now - can be implemented later
         return ResponseEntity.ok(List.of());
     }
 
     @GetMapping("/complaints/{id}/replies")
     public ResponseEntity<List<String>> getComplaintReplies(@PathVariable Long id) {
-        // Return empty list for now - can be implemented later
         return ResponseEntity.ok(List.of());
     }
 }

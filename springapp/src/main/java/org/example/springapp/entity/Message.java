@@ -16,7 +16,7 @@ public class Message {
     private String content;
     
     @Column(nullable = false)
-    private String messageType; // "PUBLIC" or "PRIVATE"
+    private String messageType;
     
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -31,5 +31,5 @@ public class Message {
     
     @ManyToOne
     @JoinColumn(name = "recipient_id")
-    private User recipient; // null for public messages, specific user for private messages
+    private User recipient;
 }

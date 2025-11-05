@@ -84,7 +84,7 @@ const AdminComplaintDetail = () => {
   const handleAssign = async (officerId) => {
     try {
       const officer = officers.find(o => o.id == officerId);
-      // When officer is assigned, status automatically becomes "IN PROGRESS"
+
       await api.put(`/api/admin/complaints/${id}/assign`, { officerId });
       setComplaint(prev => ({
         ...prev,
@@ -108,7 +108,7 @@ const AdminComplaintDetail = () => {
   const handleStatusUpdate = async (newStatus) => {
     try {
       if (newStatus === 'RESOLVED') {
-        // When marking as resolved, notify user
+
         await api.put(`/api/admin/complaints/${id}/resolve`);
         setComplaint(prev => ({ ...prev, status: 'RESOLVED' }));
         setMessage('Complaint marked as resolved. User has been notified.');

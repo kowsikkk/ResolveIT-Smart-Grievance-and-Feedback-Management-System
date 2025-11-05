@@ -25,7 +25,7 @@ const ComplaintStatus = () => {
       setComplaint(response.data);
     } catch (error) {
       console.error('Error fetching complaint details:', error);
-      // Enhanced fallback data for demo
+
       setComplaint({
         id: complaintId,
         title: 'Water Supply Disruption in Sector 15',
@@ -109,7 +109,7 @@ const ComplaintStatus = () => {
     const steps = [];
     const currentStatus = complaint?.status?.toUpperCase() || 'NEW';
     
-    // Always show NEW step
+
     steps.push({
       status: 'NEW',
       title: 'Complaint submitted by user.',
@@ -118,7 +118,7 @@ const ComplaintStatus = () => {
       icon: '✓'
     });
     
-    // Show IN PROGRESS when officer assigns the complaint
+
     if (['IN PROGRESS', 'RESOLVED', 'CLOSED'].includes(currentStatus)) {
       steps.push({
         status: 'IN PROGRESS',
@@ -129,7 +129,7 @@ const ComplaintStatus = () => {
       });
     }
     
-    // Show RESOLVED if status is resolved
+
     if (['RESOLVED', 'CLOSED'].includes(currentStatus)) {
       steps.push({
         status: 'RESOLVED',
@@ -140,7 +140,7 @@ const ComplaintStatus = () => {
       });
     }
     
-    // Show WITHDRAWN if status is withdrawn
+
     if (currentStatus === 'WITHDRAWN') {
       steps.push({
         status: 'WITHDRAWN',

@@ -35,7 +35,7 @@ const Login = () => {
         sessionStorage.setItem('username', username);
         sessionStorage.setItem('loginRole', role);
         
-        // Redirect based on role
+  
         if (role === 'admin') {
           navigate('/admin/dashboard');
         } else {

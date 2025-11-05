@@ -12,7 +12,7 @@ public class JwtUtil {
     
     private final String SECRET = "mySecretKey123456789012345678901234567890";
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
-    private final int jwtExpiration = 86400000; // 24 hours
+    private final int jwtExpiration = 86400000;
 
     public String generateToken(String username, String role) {
         return Jwts.builder()
@@ -25,14 +25,17 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
+
         return extractClaim(token, Claims::getSubject);
     }
 
     public String extractRole(String token) {
+
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public Date extractExpiration(String token) {
+
         return extractClaim(token, Claims::getExpiration);
     }
 
@@ -46,6 +49,7 @@ public class JwtUtil {
     }
 
     private Boolean isTokenExpired(String token) {
+
         return extractExpiration(token).before(new Date());
     }
 
