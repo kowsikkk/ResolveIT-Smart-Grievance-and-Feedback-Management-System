@@ -8,6 +8,7 @@ import Profile from './components/Profile';
 import ComplaintStatus from './components/ComplaintStatus';
 import AdminDashboard from './components/AdminDashboard';
 import AdminComplaintDetail from './components/AdminComplaintDetail';
+import EscalationDetail from './components/EscalationDetail';
 import OfficerDashboard from './components/OfficerDashboard';
 import OfficerComplaintDetail from './components/OfficerComplaintDetail';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -44,6 +45,11 @@ function App() {
           <Route path="/admin/complaint/:id" element={
             <ProtectedRoute>
               <AdminComplaintDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/escalation/:id" element={
+            <ProtectedRoute>
+              <EscalationDetail />
             </ProtectedRoute>
           } />
           <Route path="/officer/dashboard" element={

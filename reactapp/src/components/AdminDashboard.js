@@ -4,9 +4,11 @@ import api from '../utils/axiosConfig';
 import PriorityPieChart from './PriorityPieChart';
 import ComplaintColumnChart from './ComplaintColumnChart';
 import './Dashboard.css';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [complaints, setComplaints] = useState([]);
+  const [escalatedComplaints, setEscalatedComplaints] = useState([]);
   const [officers, setOfficers] = useState([]);
   const [stats, setStats] = useState({ total: 0, new: 0, inProgress: 0, resolved: 0 });
   const [filter, setFilter] = useState('all');
@@ -18,6 +20,7 @@ const AdminDashboard = () => {
     fetchComplaints();
     fetchOfficers();
     fetchStats();
+    fetchEscalatedComplaints();
   }, [filter, priorityFilter]);
 
   const fetchComplaints = async () => {
@@ -137,6 +140,47 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchEscalatedComplaints = async () => {
+    try {
+      const response = await api.get('/api/admin/complaints/escalated');
+      setEscalatedComplaints(response.data.filter(c => c.status === 'IN PROGRESS'));
+    } catch (error) {
+      console.error('Error fetching escalated complaints:', error);
+      
+      // Demo escalated complaints - only IN PROGRESS complaints older than 2 days
+      const demoEscalated = [
+        {
+          id: 6,
+          subject: 'Persistent Water Leakage',
+          description: 'Water pipe leaking for over 10 days, no action taken',
+          category: 'Water',
+          priority: 'High',
+          status: 'IN PROGRESS',
+          submissionType: 'Public',
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: { id: 1, username: 'officer1' },
+          user: { username: 'alex_brown', email: 'alex@example.com' },
+          daysOverdue: 3
+        },
+        {
+          id: 7,
+          subject: 'Unresolved Noise Complaint',
+          description: 'Construction noise complaint filed 3 days ago',
+          category: 'Noise',
+          priority: 'Medium',
+          status: 'IN PROGRESS',
+          submissionType: 'Public',
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          assignedTo: { id: 2, username: 'officer2' },
+          user: { username: 'lisa_white', email: 'lisa@example.com' },
+          daysOverdue: 1
+        }
+      ];
+      
+      setEscalatedComplaints(demoEscalated);
+    }
+  };
+
   const handleAssignComplaint = async (complaintId, officerId) => {
     try {
       await api.put(`/api/admin/complaints/${complaintId}/assign`, { officerId });
@@ -159,6 +203,7 @@ const AdminDashboard = () => {
       
       fetchComplaints();
       fetchStats();
+      fetchEscalatedComplaints();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error updating complaint status:', error);
@@ -215,6 +260,72 @@ const AdminDashboard = () => {
         <div className="charts-container">
           <PriorityPieChart complaints={complaints} />
           <ComplaintColumnChart complaints={complaints} />
+        </div>
+
+        <div className="dashboard-card escalation-card">
+          <div className="card-header">
+            <h2>🚨 Escalation ({escalatedComplaints.length})</h2>
+          </div>
+          
+          <div className="escalation-content">
+            {escalatedComplaints.length === 0 ? (
+              <div className="no-escalation-message">
+                <div className="success-icon">✅</div>
+                <p>No complaints require escalation at this time</p>
+                <small>All IN PROGRESS complaints are within the 2-day threshold</small>
+              </div>
+            ) : (
+              <div className="escalated-complaints-grid">
+                {escalatedComplaints.map(complaint => (
+                  <div key={complaint.id} className="escalated-complaint-card">
+                    <div className="escalation-header">
+                      <div className="complaint-id-title">
+                        <span className="complaint-id">#{complaint.id}</span>
+                        <h4 className="complaint-title">{complaint.subject}</h4>
+                      </div>
+                      <div className="escalation-badges">
+                        <span className="overdue-badge">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                          </svg>
+                          {complaint.daysOverdue} days overdue
+                        </span>
+                        <span className={`priority-badge priority-${complaint.priority?.toLowerCase()}`}>
+                          {complaint.priority}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="escalation-meta">
+                      <div className="meta-item">
+                        <span className="meta-label">Assigned to:</span>
+                        <span className="meta-value">{complaint.assignedTo?.username || 'Unassigned'}</span>
+                      </div>
+                      <div className="meta-item">
+                        <span className="meta-label">Created:</span>
+                        <span className="meta-value">{new Date(complaint.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="meta-item">
+                        <span className="meta-label">Category:</span>
+                        <span className="meta-value">{complaint.category}</span>
+                      </div>
+                    </div>
+                    <div className="escalation-actions">
+                      <button 
+                        onClick={() => navigate(`/admin/escalation/${complaint.id}`)}
+                        className="view-escalated-btn"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="dashboard-card">

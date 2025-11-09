@@ -1,4 +1,63 @@
 /* Officer Dashboard inherits Admin Dashboard theme */
+
+/* Escalation Notification Styles */
+.escalation-notification {
+  margin-bottom: 20px;
+}
+
+.escalation-alert {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.escalation-alert svg {
+  color: #ffc107;
+  flex-shrink: 0;
+}
+
+/* Escalated Complaint Styles */
+.escalated-complaint {
+  border: 2px solid #dc3545 !important;
+  background: linear-gradient(145deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%) !important;
+  position: relative;
+}
+
+.escalated-complaint::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #dc3545, #fd7e14);
+  border-radius: 12px 12px 0 0;
+}
+
+.escalation-warning {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.escalation-warning svg {
+  color: #ffc107;
+}
 .progress-btn {
   padding: 8px 16px;
   background: #f39c12;

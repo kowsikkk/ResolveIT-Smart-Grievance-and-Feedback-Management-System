@@ -6,11 +6,16 @@ import './OfficerDashboard.css';
 
 const OfficerDashboard = () => {
   const [complaints, setComplaints] = useState([]);
-
+  const [escalatedComplaints, setEscalatedComplaints] = useState([]);
   const [stats, setStats] = useState({ assigned: 0, inProgress: 0, resolved: 0 });
   const [filter, setFilter] = useState('all');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+
+  const isComplaintEscalated = (complaint) => {
+    const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
+    return complaint.status === 'IN PROGRESS' && daysSinceCreated > 2;
+  };
 
   useEffect(() => {
     fetchAssignedComplaints();
@@ -27,6 +32,8 @@ const OfficerDashboard = () => {
         filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
       setComplaints(filteredComplaints);
+      const escalated = filteredComplaints.filter(isComplaintEscalated);
+      setEscalatedComplaints(escalated);
     } catch (error) {
       console.error('Error fetching assigned complaints:', error);
       
@@ -60,6 +67,8 @@ const OfficerDashboard = () => {
         filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
       setComplaints(filteredComplaints);
+      const escalated = filteredComplaints.filter(isComplaintEscalated);
+      setEscalatedComplaints(escalated);
     }
   };
 
@@ -122,6 +131,17 @@ const OfficerDashboard = () => {
 
       {message && <div className="success-message">{message}</div>}
       
+      {escalatedComplaints.length > 0 && (
+        <div className="escalation-notification">
+          <div className="escalation-alert">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z"/>
+            </svg>
+            <span> {escalatedComplaints.length} complaint{escalatedComplaints.length > 1 ? 's' : ''} escalated to admin due to delay!</span>
+          </div>
+        </div>
+      )}
+      
       <div className="dashboard-content">
         <div className="dashboard-card">
           <h2>Statistics Overview</h2>
@@ -160,9 +180,17 @@ const OfficerDashboard = () => {
               <p>No complaints assigned to you</p>
             ) : (
               complaints.map(complaint => (
-                <div key={complaint.id} className="complaint-item admin-complaint-item">
+                <div key={complaint.id} className={`complaint-item admin-complaint-item ${isComplaintEscalated(complaint) ? 'escalated-complaint' : ''}`}>
                   <div className="complaint-header" onClick={() => navigate(`/officer/complaint/${complaint.id}`)}>
                     <h3>#{complaint.id} - {complaint.subject}</h3>
+                    {isComplaintEscalated(complaint) && (
+                      <div className="escalation-warning">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z"/>
+                        </svg>
+                        ESCALATED
+                      </div>
+                    )}
                     <div className="complaint-badges">
                       <span className={`priority-badge priority-${complaint.priority?.toLowerCase()}`}>
                         {complaint.priority}

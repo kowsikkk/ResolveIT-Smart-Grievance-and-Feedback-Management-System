@@ -1,0 +1,225 @@
+/* Escalation Detail - Matching AdminComplaintDetail Theme */
+
+.status-badge.status-escalated {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.escalation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 8px 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #f7fafc;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.complaint-detail-container .authority-select {
+  width: 100% !important;
+  padding: 16px 20px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: #f7fafc !important;
+  font-size: 16px !important;
+  transition: all 0.3s !important;
+  font-family: inherit !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23f7fafc" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>') !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 12px !important;
+  cursor: pointer !important;
+}
+
+.complaint-detail-container .authority-select:focus {
+  outline: none !important;
+  border-color: #4299e1 !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1) !important;
+}
+
+.complaint-detail-container .authority-select option {
+  background: #2d3748 !important;
+  color: #f7fafc !important;
+  padding: 12px !important;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #718096;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #4299e1;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+}
+
+.toggle-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f7fafc;
+}
+
+.complaint-detail-container .escalate-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 18px 32px !important;
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  transition: all 0.3s !important;
+  align-self: center !important;
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
+  letter-spacing: 0.5px !important;
+}
+
+.complaint-detail-container .escalate-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333, #a71e2a) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5) !important;
+}
+
+.complaint-detail-container .escalate-btn:disabled {
+  background: linear-gradient(135deg, #718096, #4a5568) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(113, 128, 150, 0.2) !important;
+  opacity: 0.6 !important;
+}
+
+.form-help {
+  color: #a0aec0;
+  font-size: 14px;
+  font-style: italic;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.loading {
+  color: #a0aec0;
+}
+
+.error {
+  color: #f56565;
+}
+
+/* Form styling improvements */
+.form-group:first-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 32px;
+}
+
+.form-group:nth-child(2) {
+  padding: 24px 0;
+}
+
+.form-group:last-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 32px;
+  background: rgba(220, 53, 69, 0.05);
+  margin: 0 -32px;
+  padding-left: 32px;
+  padding-right: 32px;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .complaint-detail-content {
+    padding: 16px;
+  }
+  
+  .complaint-details {
+    padding: 20px;
+  }
+  
+  .escalation-form {
+    gap: 24px;
+  }
+  
+  .notify-btn,
+  .escalate-btn {
+    align-self: stretch;
+    justify-content: center;
+    padding: 16px 20px;
+  }
+  
+  .form-group:last-child {
+    margin: 0 -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}

@@ -6,9 +6,15 @@ import './Dashboard.css';
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [complaints, setComplaints] = useState([]);
+  const [escalatedComplaints, setEscalatedComplaints] = useState([]);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
   const userId = sessionStorage.getItem('userId');
+
+  const isComplaintEscalated = (complaint) => {
+    const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
+    return complaint.status === 'IN PROGRESS' && daysSinceCreated > 2;
+  };
 
   useEffect(() => {
     fetchUserData();
@@ -56,9 +62,12 @@ const Dashboard = () => {
     try {
       const response = await api.get(`/api/complaints/user/${userId}`);
       setComplaints(response.data);
+      const escalated = response.data.filter(isComplaintEscalated);
+      setEscalatedComplaints(escalated);
     } catch (error) {
       console.error('Error fetching complaints:', error);
       setComplaints([]);
+      setEscalatedComplaints([]);
     }
   };
 
@@ -87,6 +96,17 @@ const Dashboard = () => {
 
       {message && <div className="success-message">{message}</div>}
       
+      {escalatedComplaints.length > 0 && (
+        <div className="escalation-notification">
+          <div className="escalation-alert">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z"/>
+            </svg>
+            <span> {escalatedComplaints.length} of your complaint{escalatedComplaints.length > 1 ? 's have' : ' has'} been escalated to admin due to delay!</span>
+          </div>
+        </div>
+      )}
+      
       <div className="dashboard-content">
         <div className="dashboard-card">
           <h2>Quick Actions</h2>
@@ -102,8 +122,18 @@ const Dashboard = () => {
               <p>No complaints found</p>
             ) : (
               complaints.map(complaint => (
-                <div key={complaint.id} className="complaint-item" onClick={() => navigate(`/complaint-status/${complaint.id}`)}>
-                  <h3>{complaint.subject}</h3>
+                <div key={complaint.id} className={`complaint-item ${isComplaintEscalated(complaint) ? 'escalated-complaint' : ''}`} onClick={() => navigate(`/complaint-status/${complaint.id}`)}>
+                  <div className="complaint-title-row">
+                    <h3>{complaint.subject}</h3>
+                    {isComplaintEscalated(complaint) && (
+                      <div className="escalation-warning">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z"/>
+                        </svg>
+                        ESCALATED
+                      </div>
+                    )}
+                  </div>
                   <div className="complaint-meta">
                     <div className="meta-left">
                       <span>Date: {new Date(complaint.createdAt).toLocaleDateString()}</span>
