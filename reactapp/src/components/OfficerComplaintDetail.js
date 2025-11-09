@@ -4,22 +4,19 @@ import api from '../utils/axiosConfig';
 import './Dashboard.css';
 import './AdminComplaintDetail.css';
 
-const AdminComplaintDetail = () => {
+const OfficerComplaintDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [complaint, setComplaint] = useState(null);
-  const [officers, setOfficers] = useState([]);
   const [privateMessages, setPrivateMessages] = useState([]);
   const [publicMessages, setPublicMessages] = useState([]);
   const [newPrivateMessage, setNewPrivateMessage] = useState('');
   const [newPublicMessage, setNewPublicMessage] = useState('');
-
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchComplaintDetail();
-    fetchOfficers();
     fetchPrivateMessages();
     fetchPublicMessages();
   }, [id]);
@@ -32,32 +29,18 @@ const AdminComplaintDetail = () => {
       console.error('Error fetching complaint:', error);
       setComplaint({
         id: id,
-        subject: 'Water Supply Disruption in Sector 15',
-        description: 'There has been no water supply in our area for the past 3 days. Multiple households are affected and we need immediate attention to resolve this issue.',
-        category: 'Water',
-        priority: 'High',
-        status: 'NEW',
+        subject: 'Road Repair Needed on Main Street',
+        description: 'Multiple potholes causing traffic issues and making it difficult for vehicles to pass safely.',
+        category: 'Roads',
+        priority: 'Medium',
+        status: 'IN PROGRESS',
         submissionType: 'Public',
         createdAt: new Date().toISOString(),
-        user: { username: 'john_doe', email: 'john@example.com' },
-        assignedTo: null,
-        files: ['water_issue_photo.jpg']
+        user: { username: 'jane_smith', email: 'jane@example.com' },
+        files: ['pothole_image.jpg']
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchOfficers = async () => {
-    try {
-      const response = await api.get('/api/users/officers');
-      setOfficers(response.data);
-    } catch (error) {
-      console.error('Error fetching officers:', error);
-      setOfficers([
-        { id: 1, username: 'officer1', email: 'officer1@example.com' },
-        { id: 2, username: 'officer2', email: 'officer2@example.com' }
-      ]);
     }
   };
 
@@ -81,38 +64,11 @@ const AdminComplaintDetail = () => {
     }
   };
 
-  const handleAssign = async (officerId) => {
-    try {
-      const officer = officers.find(o => o.id == officerId);
-
-      await api.put(`/api/admin/complaints/${id}/assign`, { officerId });
-      setComplaint(prev => ({
-        ...prev,
-        assignedTo: officer,
-        status: 'IN PROGRESS'
-      }));
-      setMessage(`Complaint assigned to ${officer?.username}. Status updated to IN PROGRESS.`);
-    } catch (error) {
-      console.error('Error assigning complaint:', error);
-      const officer = officers.find(o => o.id == officerId);
-      setComplaint(prev => ({
-        ...prev,
-        assignedTo: officer,
-        status: 'IN PROGRESS'
-      }));
-      setMessage(`Complaint assigned to ${officer?.username}. Status updated to IN PROGRESS.`);
-    }
-    setTimeout(() => setMessage(''), 3000);
-  };
-
   const handleStatusUpdate = async (newStatus) => {
     try {
-      if (newStatus === 'RESOLVED') {
-
-        await api.put(`/api/admin/complaints/${id}/resolve`);
-        setComplaint(prev => ({ ...prev, status: 'RESOLVED' }));
-        setMessage('Complaint marked as resolved. User has been notified.');
-      }
+      await api.put(`/api/officer/complaints/${id}/status`, { status: newStatus });
+      setComplaint(prev => ({ ...prev, status: newStatus }));
+      setMessage(`Status updated to ${newStatus}`);
     } catch (error) {
       console.error('Error updating status:', error);
       setComplaint(prev => ({ ...prev, status: newStatus }));
@@ -123,19 +79,14 @@ const AdminComplaintDetail = () => {
 
   const handleSendPrivateMessage = async (e) => {
     e.preventDefault();
-    if (!newPrivateMessage.trim() || !complaint.assignedTo) {
-      setMessage('Please assign an officer first to send private messages');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
+    if (!newPrivateMessage.trim()) return;
 
     try {
       const messageData = {
         complaintId: id,
         senderId: sessionStorage.getItem('userId'),
         content: newPrivateMessage,
-        messageType: 'PRIVATE',
-        recipientId: complaint.assignedTo.id
+        messageType: 'PRIVATE'
       };
 
       await api.post('/api/messages/send', messageData);
@@ -184,7 +135,7 @@ const AdminComplaintDetail = () => {
     <div className="complaint-detail-container">
       <div className="complaint-detail-header">
         <div className="header-left">
-          <button onClick={() => navigate('/admin/dashboard')} className="back-button">
+          <button onClick={() => navigate('/officer/dashboard')} className="back-button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
@@ -204,20 +155,7 @@ const AdminComplaintDetail = () => {
         </div>
         <div className="header-actions">
           <div className="quick-actions">
-            <select 
-              onChange={(e) => handleAssign(e.target.value)} 
-              defaultValue="" 
-              className="action-select"
-              disabled={complaint.status === 'RESOLVED'}
-            >
-              <option value="">Assign Officer</option>
-              {officers.map(officer => (
-                <option key={officer.id} value={officer.id}>
-                  {officer.username}
-                </option>
-              ))}
-            </select>
-            {complaint.status === 'RESOLVED' ? (
+            {complaint.status === 'Resolved' ? (
               <button 
                 onClick={() => handleStatusUpdate('IN PROGRESS')}
                 className="unresolve-btn"
@@ -229,7 +167,7 @@ const AdminComplaintDetail = () => {
               </button>
             ) : (
               <button 
-                onClick={() => handleStatusUpdate('RESOLVED')}
+                onClick={() => handleStatusUpdate('Resolved')}
                 className="resolve-btn"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -281,14 +219,14 @@ const AdminComplaintDetail = () => {
                 </div>
                 <div className="metadata-item">
                   <span className="label">Assigned To</span>
-                  <span className="value">{complaint.assignedTo?.username || 'Unassigned'}</span>
+                  <span className="value">{complaint.assignedTo?.username || 'Me'}</span>
                 </div>
                 <div className="metadata-item">
                   <span className="label">Submission Type</span>
                   <span className="value">{complaint.submissionType}</span>
                 </div>
               </div>
-              
+
               {complaint.files && complaint.files.length > 0 && (
                 <div className="attachments-section">
                   <h4>📎 Attachments</h4>
@@ -311,7 +249,7 @@ const AdminComplaintDetail = () => {
             <div className="private-messages-card">
               <div className="card-header">
                 <h2>🔒 Private Messages</h2>
-                <span className="subtitle">Send private messages to officers only</span>
+                <span className="subtitle">Internal communication with admin</span>
               </div>
               
               <div className="messages-container">
@@ -342,24 +280,14 @@ const AdminComplaintDetail = () => {
               </div>
               
               <form onSubmit={handleSendPrivateMessage} className="add-message-form">
-                {complaint.assignedTo ? (
-                  <div className="assigned-officer-info">
-                    <span>Sending private message to officer</span>
-                  </div>
-                ) : (
-                  <div className="no-officer-info">
-                    <span>Please assign an officer first to send private messages</span>
-                  </div>
-                )}
                 <textarea
                   value={newPrivateMessage}
                   onChange={(e) => setNewPrivateMessage(e.target.value)}
-                  placeholder={complaint.assignedTo ? "Write a private message to assigned officer..." : "Assign an officer first"}
+                  placeholder="Write a private message to admin..."
                   rows="3"
                   required
-                  disabled={!complaint.assignedTo}
                 />
-                <button type="submit" className="submit-btn" disabled={!complaint.assignedTo}>
+                <button type="submit" className="submit-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                   </svg>
@@ -371,7 +299,7 @@ const AdminComplaintDetail = () => {
             <div className="public-messages-card">
               <div className="card-header">
                 <h2>💬 Public Communication</h2>
-                <span className="subtitle">Messages visible to user and officers</span>
+                <span className="subtitle">Messages visible to user</span>
               </div>
               
               <div className="messages-container">
@@ -399,7 +327,7 @@ const AdminComplaintDetail = () => {
                 <textarea
                   value={newPublicMessage}
                   onChange={(e) => setNewPublicMessage(e.target.value)}
-                  placeholder="Write a public message to user and officers..."
+                  placeholder="Write a public message to user..."
                   rows="3"
                   required
                 />
@@ -418,4 +346,4 @@ const AdminComplaintDetail = () => {
   );
 };
 
-export default AdminComplaintDetail;
+export default OfficerComplaintDetail;

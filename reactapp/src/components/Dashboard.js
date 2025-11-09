@@ -77,7 +77,10 @@ const Dashboard = () => {
       <div className="dashboard-header">
         <h1>Dashboard</h1>
         <div className="header-actions">
-          <button onClick={() => navigate('/profile')} className="profile-btn">Profile</button>
+          <button onClick={() => {
+            sessionStorage.setItem('loginRole', 'user');
+            navigate('/profile');
+          }} className="profile-btn">Profile</button>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
       </div>

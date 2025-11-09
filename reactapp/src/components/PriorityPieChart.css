@@ -1,0 +1,137 @@
+.pie-chart-container {
+  background: transparent;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.pie-chart-container h3 {
+  margin: 0 0 20px 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pie-chart-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  position: relative;
+}
+
+.chart-svg-container {
+  position: relative;
+}
+
+.pie-segment {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.pie-segment:hover {
+  filter: brightness(1.1) drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+}
+
+.chart-center-text {
+  font-size: 12px;
+  fill: #333;
+  font-weight: 600;
+}
+
+.chart-center-number {
+  font-size: 18px;
+  fill: #333;
+  font-weight: 700;
+}
+
+.pie-chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-width: 180px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid transparent;
+}
+
+.legend-item:hover,
+.legend-item.highlighted {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.3);
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.legend-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  flex-shrink: 0;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legend-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.legend-count {
+  font-size: 12px;
+  color: #ccc;
+}
+
+.legend-percentage {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.chart-tooltip {
+  position: fixed;
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 768px) {
+  .pie-chart-wrapper {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .pie-chart-legend {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .legend-item {
+    padding: 8px;
+  }
+}

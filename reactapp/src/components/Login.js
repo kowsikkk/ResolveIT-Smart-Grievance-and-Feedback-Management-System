@@ -38,6 +38,8 @@ const Login = () => {
   
         if (role === 'admin') {
           navigate('/admin/dashboard');
+        } else if (role === 'officer') {
+          navigate('/officer/dashboard');
         } else {
           navigate('/dashboard');
         }

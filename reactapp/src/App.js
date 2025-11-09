@@ -8,6 +8,8 @@ import Profile from './components/Profile';
 import ComplaintStatus from './components/ComplaintStatus';
 import AdminDashboard from './components/AdminDashboard';
 import AdminComplaintDetail from './components/AdminComplaintDetail';
+import OfficerDashboard from './components/OfficerDashboard';
+import OfficerComplaintDetail from './components/OfficerComplaintDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -42,6 +44,16 @@ function App() {
           <Route path="/admin/complaint/:id" element={
             <ProtectedRoute>
               <AdminComplaintDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/officer/dashboard" element={
+            <ProtectedRoute>
+              <OfficerDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/officer/complaint/:id" element={
+            <ProtectedRoute>
+              <OfficerComplaintDetail />
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/login" replace />} />

@@ -31,8 +31,9 @@
 
 ## Default Test Users
 
-- **Username:** admin, **Password:** admin123
-- **Username:** user, **Password:** user123
+- **Username:** admin, **Password:** admin123 (Role: Admin)
+- **Username:** user, **Password:** user123 (Role: User)
+- **Username:** officer1, **Password:** officer123 (Role: Officer)
 
 ## Features
 
@@ -47,10 +48,20 @@
 - Bottom navigation bar
 - Success feedback on submission
 
+### Officer Dashboard
+- View assigned complaints
+- Update complaint status (In Progress/Resolved)
+- Send public updates to complainants
+- Statistics overview of assigned work
+- Individual complaint detail view
+
 ## API Endpoints
 
 - `POST /api/auth/login` - User authentication
 - `POST /api/complaints/submit` - Submit complaint
+- `GET /api/officer/complaints/{officerId}` - Get assigned complaints
+- `GET /api/officer/stats/{officerId}` - Get officer statistics
+- `PUT /api/officer/complaints/{id}/status` - Update complaint status
 
 ## Database Schema
 

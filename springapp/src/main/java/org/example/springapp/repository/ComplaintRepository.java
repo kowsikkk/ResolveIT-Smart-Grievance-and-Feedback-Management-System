@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
     List<Complaint> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<Complaint> findByAssignedToId(Long assignedToId);
     long countByStatus(String status);
 }

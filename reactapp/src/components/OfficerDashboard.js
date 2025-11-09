@@ -1,52 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/axiosConfig';
-import PriorityPieChart from './PriorityPieChart';
-import ComplaintColumnChart from './ComplaintColumnChart';
 import './Dashboard.css';
+import './OfficerDashboard.css';
 
-const AdminDashboard = () => {
+const OfficerDashboard = () => {
   const [complaints, setComplaints] = useState([]);
-  const [officers, setOfficers] = useState([]);
-  const [stats, setStats] = useState({ total: 0, new: 0, inProgress: 0, resolved: 0 });
+
+  const [stats, setStats] = useState({ assigned: 0, inProgress: 0, resolved: 0 });
   const [filter, setFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchComplaints();
-    fetchOfficers();
-    fetchStats();
-  }, [filter, priorityFilter]);
+    fetchAssignedComplaints();
 
-  const fetchComplaints = async () => {
+    fetchStats();
+  }, [filter]);
+
+  const fetchAssignedComplaints = async () => {
     try {
-      const response = await api.get('/api/admin/complaints');
+      const officerId = sessionStorage.getItem('userId');
+      const response = await api.get(`/api/officer/complaints/${officerId}`);
       let filteredComplaints = response.data;
       if (filter !== 'all') {
         filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
-      if (priorityFilter !== 'all') {
-        filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
-      }
       setComplaints(filteredComplaints);
     } catch (error) {
-      console.error('Error fetching complaints from database:', error);
+      console.error('Error fetching assigned complaints:', error);
       
       const demoComplaints = [
-        {
-          id: 1,
-          subject: 'Water Supply Issue',
-          description: 'No water supply for 3 days in our area',
-          category: 'Water',
-          priority: 'High',
-          status: 'New',
-          submissionType: 'Public',
-          createdAt: new Date().toISOString(),
-          assignedTo: null,
-          user: { username: 'john_doe', email: 'john@example.com' }
-        },
         {
           id: 2,
           subject: 'Road Repair Needed on Main Street',
@@ -56,7 +40,6 @@ const AdminDashboard = () => {
           status: 'IN PROGRESS',
           submissionType: 'Public',
           createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          assignedTo: { id: 1, username: 'officer1' },
           user: { username: 'jane_smith', email: 'jane@example.com' }
         },
         {
@@ -68,32 +51,7 @@ const AdminDashboard = () => {
           status: 'IN PROGRESS',
           submissionType: 'Anonymous',
           createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          assignedTo: { id: 2, username: 'officer2' },
           user: null
-        },
-        {
-          id: 4,
-          subject: 'Garbage Collection Issue',
-          description: 'Garbage not collected for 5 days',
-          category: 'Sanitation',
-          priority: 'High',
-          status: 'Resolved',
-          submissionType: 'Public',
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          assignedTo: { id: 1, username: 'officer1' },
-          user: { username: 'mike_wilson', email: 'mike@example.com' }
-        },
-        {
-          id: 5,
-          subject: 'Traffic Signal Malfunction',
-          description: 'Traffic light stuck on red for 2 hours',
-          category: 'Traffic',
-          priority: 'High',
-          status: 'New',
-          submissionType: 'Public',
-          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          assignedTo: null,
-          user: { username: 'sarah_jones', email: 'sarah@example.com' }
         }
       ];
       
@@ -101,68 +59,43 @@ const AdminDashboard = () => {
       if (filter !== 'all') {
         filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
-      if (priorityFilter !== 'all') {
-        filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
-      }
       setComplaints(filteredComplaints);
     }
   };
 
-  const fetchOfficers = async () => {
-    try {
-      const response = await api.get('/api/admin/officers');
-      setOfficers(response.data);
-    } catch (error) {
-      console.error('Error fetching officers from database:', error);
-      setOfficers([
-        { id: 1, username: 'officer1', email: 'officer1@example.com' },
-        { id: 2, username: 'officer2', email: 'officer2@example.com' },
-        { id: 3, username: 'officer3', email: 'officer3@example.com' }
-      ]);
-    }
-  };
+
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/api/admin/complaints/stats');
+      const officerId = sessionStorage.getItem('userId');
+      const response = await api.get(`/api/officer/stats/${officerId}`);
       setStats(response.data);
     } catch (error) {
-      console.error('Error fetching stats from database:', error);
+      console.error('Error fetching stats:', error);
       setStats({
-        total: 5,
-        new: 2,
-        inProgress: 1,
+        assigned: 3,
+        inProgress: 2,
         resolved: 1
       });
     }
   };
 
-  const handleAssignComplaint = async (complaintId, officerId) => {
-    try {
-      await api.put(`/api/admin/complaints/${complaintId}/assign`, { officerId });
-      const officer = officers.find(o => o.id == officerId);
-      setMessage(`Complaint #${complaintId} assigned to ${officer?.username || 'Officer'}`);
-      
-      fetchComplaints();
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error assigning complaint:', error);
-      setMessage('Error assigning complaint. Please try again.');
-      setTimeout(() => setMessage(''), 3000);
-    }
-  };
+
 
   const handleStatusUpdate = async (complaintId, newStatus) => {
     try {
-      await api.put(`/api/admin/complaints/${complaintId}/status`, { status: newStatus });
+      await api.put(`/api/officer/complaints/${complaintId}/status`, { status: newStatus });
       setMessage(`Complaint #${complaintId} status updated to ${newStatus}`);
       
-      fetchComplaints();
+      fetchAssignedComplaints();
       fetchStats();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error updating complaint status:', error);
-      setMessage('Error updating status. Please try again.');
+      setComplaints(prev => prev.map(c => 
+        c.id === complaintId ? { ...c, status: newStatus } : c
+      ));
+      setMessage(`Complaint #${complaintId} status updated to ${newStatus}`);
       setTimeout(() => setMessage(''), 3000);
     }
   };
@@ -177,10 +110,10 @@ const AdminDashboard = () => {
   return (
     <div className="dashboard-container admin-dashboard">
       <div className="dashboard-header">
-        <h1>Admin Dashboard</h1>
+        <h1>Officer Dashboard</h1>
         <div className="header-actions">
           <button onClick={() => {
-            sessionStorage.setItem('loginRole', 'admin');
+            sessionStorage.setItem('loginRole', 'officer');
             navigate('/profile');
           }} className="profile-btn">Profile</button>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
@@ -195,15 +128,11 @@ const AdminDashboard = () => {
           <div className="stats-grid">
             <div className="stat-item">
               <span className="stat-label">Total</span>
-              <span className="stat-value">{stats.total || 0}</span>
+              <span className="stat-value">{stats.assigned || 0}</span>
             </div>
             <div className="stat-item">
-              <span className="stat-label">New</span>
-              <span className="stat-value new">{stats.new || 0}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">IN PROGRESS</span>
-              <span className="stat-value assigned">{stats.inProgress || stats.assigned || 0}</span>
+              <span className="stat-label">In Progress</span>
+              <span className="stat-value assigned">{stats.inProgress || 0}</span>
             </div>
             <div className="stat-item">
               <span className="stat-label">Resolved</span>
@@ -212,37 +141,27 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="charts-container">
-          <PriorityPieChart complaints={complaints} />
-          <ComplaintColumnChart complaints={complaints} />
-        </div>
+
 
         <div className="dashboard-card">
           <div className="card-header">
-            <h2>All Complaints ({complaints.length})</h2>
+            <h2>My Assigned Complaints ({complaints.length})</h2>
             <div className="filter-controls">
               <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
                 <option value="all">All Status</option>
-                <option value="NEW">NEW</option>
-                <option value="IN PROGRESS">IN PROGRESS</option>
+                <option value="IN PROGRESS">In Progress</option>
                 <option value="Resolved">Resolved</option>
-              </select>
-              <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="filter-select">
-                <option value="all">All Priority</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
               </select>
             </div>
           </div>
           
           <div className="complaints-list">
             {complaints.length === 0 ? (
-              <p>No complaints found</p>
+              <p>No complaints assigned to you</p>
             ) : (
               complaints.map(complaint => (
                 <div key={complaint.id} className="complaint-item admin-complaint-item">
-                  <div className="complaint-header" onClick={() => navigate(`/admin/complaint/${complaint.id}`)}>
+                  <div className="complaint-header" onClick={() => navigate(`/officer/complaint/${complaint.id}`)}>
                     <h3>#{complaint.id} - {complaint.subject}</h3>
                     <div className="complaint-badges">
                       <span className={`priority-badge priority-${complaint.priority?.toLowerCase()}`}>
@@ -260,24 +179,9 @@ const AdminDashboard = () => {
                       <span>Submitted by: {complaint.user?.username || 'Anonymous'}</span>
                       <span>Date: {new Date(complaint.createdAt).toLocaleDateString()}</span>
                     </div>
-                    <div className="meta-right">
-                      <span>Assigned to: {complaint.assignedTo?.username || 'Unassigned'}</span>
-                    </div>
                   </div>
                   
                   <div className="admin-actions">
-                    <select 
-                      onChange={(e) => handleAssignComplaint(complaint.id, e.target.value)}
-                      defaultValue=""
-                      className="action-select"
-                    >
-                      <option value="">Assign Officer...</option>
-                      {officers.map(officer => (
-                        <option key={officer.id} value={officer.id}>
-                          {officer.username}
-                        </option>
-                      ))}
-                    </select>
                     {complaint.status === 'Resolved' ? (
                       <button 
                         onClick={() => handleStatusUpdate(complaint.id, 'IN PROGRESS')}
@@ -310,4 +214,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default OfficerDashboard;

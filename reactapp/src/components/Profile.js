@@ -53,6 +53,18 @@ const Profile = () => {
     }
   };
 
+  const getDashboardRoute = () => {
+    const role = sessionStorage.getItem('loginRole') || user?.role;
+    switch(role) {
+      case 'admin':
+        return '/admin/dashboard';
+      case 'officer':
+        return '/officer/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem('userId');
     sessionStorage.removeItem('token');
@@ -64,7 +76,7 @@ const Profile = () => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <button onClick={() => navigate('/dashboard')} className="back-btn">← Back</button>
+        <button onClick={() => navigate(getDashboardRoute())} className="back-btn">← Back</button>
         <h1>Profile</h1>
         <button onClick={handleLogout} className="logout-btn">Logout</button>
       </div>
