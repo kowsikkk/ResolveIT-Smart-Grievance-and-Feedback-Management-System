@@ -82,4 +82,15 @@ public class AdminController {
     public ResponseEntity<List<String>> getComplaintReplies(@PathVariable Long id) {
         return ResponseEntity.ok(List.of());
     }
+
+    @GetMapping("/complaints/escalated")
+    public ResponseEntity<List<Complaint>> getEscalatedComplaints() {
+        try {
+            List<Complaint> escalatedComplaints = complaintRepository.findEscalatedComplaints();
+            return ResponseEntity.ok(escalatedComplaints);
+        } catch (Exception e) {
+            // Return empty list if query fails
+            return ResponseEntity.ok(List.of());
+        }
+    }
 }
