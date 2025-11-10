@@ -13,17 +13,18 @@
   padding: 8px 0;
 }
 
-.form-group {
+.escalation-form .form-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-.form-group label {
+.escalation-form .form-group label {
   font-weight: 600;
-  color: #f7fafc;
-  font-size: 16px;
-  margin-bottom: 8px;
+  color: #e2e8f0;
+  font-size: 15px;
+  margin-bottom: 6px;
 }
 
 .complaint-detail-container .authority-select {
@@ -177,18 +178,18 @@ input:checked + .toggle-slider:before {
 }
 
 /* Form styling improvements */
-.form-group:first-child {
+.escalation-form .form-group:first-child {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 32px;
+  padding-bottom: 24px;
 }
 
-.form-group:nth-child(2) {
-  padding: 24px 0;
+.escalation-form .form-group:nth-child(2) {
+  padding: 20px 0;
 }
 
-.form-group:last-child {
+.escalation-form .form-group:last-child {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 32px;
+  padding-top: 24px;
   background: rgba(220, 53, 69, 0.05);
   margin: 0 -32px;
   padding-left: 32px;
