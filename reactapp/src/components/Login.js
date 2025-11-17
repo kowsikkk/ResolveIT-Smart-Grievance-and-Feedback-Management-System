@@ -34,8 +34,6 @@ const Login = () => {
         sessionStorage.setItem('userId', response.data.userId);
         sessionStorage.setItem('username', username);
         sessionStorage.setItem('loginRole', role);
-        
-  
         if (role === 'admin') {
           navigate('/admin/dashboard');
         } else if (role === 'officer') {

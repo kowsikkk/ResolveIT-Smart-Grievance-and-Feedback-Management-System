@@ -59,7 +59,6 @@ public class AuthController {
         public String username;
         public String password;
         public String role;
-
     }
     
     static class RegisterRequest {
@@ -67,7 +66,6 @@ public class AuthController {
         public String password;
         public String email;
         public String role;
-
     }
     
     static class LoginResponse {
@@ -85,6 +83,5 @@ public class AuthController {
             this.userId = userId;
             this.token = token;
         }
-
     }
 }

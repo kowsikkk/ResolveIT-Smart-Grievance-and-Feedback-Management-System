@@ -19,7 +19,6 @@ const OfficerDashboard = () => {
 
   useEffect(() => {
     fetchAssignedComplaints();
-
     fetchStats();
   }, [filter]);
 
@@ -72,8 +71,6 @@ const OfficerDashboard = () => {
     }
   };
 
-
-
   const fetchStats = async () => {
     try {
       const officerId = sessionStorage.getItem('userId');
@@ -88,8 +85,6 @@ const OfficerDashboard = () => {
       });
     }
   };
-
-
 
   const handleStatusUpdate = async (complaintId, newStatus) => {
     try {
@@ -160,8 +155,6 @@ const OfficerDashboard = () => {
             </div>
           </div>
         </div>
-
-
 
         <div className="dashboard-card">
           <div className="card-header">

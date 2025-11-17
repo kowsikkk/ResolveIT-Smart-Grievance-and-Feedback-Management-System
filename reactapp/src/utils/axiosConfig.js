@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-
 const api = axios.create({
   baseURL: 'http://localhost:8080'
 });
-
 
 api.interceptors.request.use(
   (config) => {
@@ -18,7 +16,6 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
 
 api.interceptors.response.use(
   (response) => response,

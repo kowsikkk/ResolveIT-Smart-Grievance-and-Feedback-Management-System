@@ -20,7 +20,6 @@ const Dashboard = () => {
     fetchUserData();
     fetchComplaints();
     
-
     const successMsg = sessionStorage.getItem('successMessage');
     if (successMsg) {
       setMessage(successMsg);
@@ -34,7 +33,6 @@ const Dashboard = () => {
       const response = await api.get(`/api/users/${userId}`);
       setUser(response.data);
       
-
       if (response.data.role === 'admin') {
         navigate('/admin/dashboard');
         return;
@@ -49,7 +47,6 @@ const Dashboard = () => {
       };
       setUser(userData);
       
-
       const loginRole = sessionStorage.getItem('loginRole');
       if (loginRole === 'admin') {
         navigate('/admin/dashboard');
@@ -78,8 +75,6 @@ const Dashboard = () => {
     sessionStorage.removeItem('loginRole');
     navigate('/login');
   };
-
-
 
   return (
     <div className="dashboard-container">
@@ -153,7 +148,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-
 
 export default Dashboard;

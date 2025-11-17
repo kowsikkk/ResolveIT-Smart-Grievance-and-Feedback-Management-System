@@ -73,7 +73,6 @@ const ComplaintColumnChart = ({ complaints }) => {
                     backgroundColor: day.color,
                     boxShadow: hoveredBar === day.dayName ? `0 4px 12px ${day.color}40` : 'none'
                   }}
-
                   onMouseEnter={() => setHoveredBar(day.dayName)}
                   onMouseLeave={() => setHoveredBar(null)}
                 >
@@ -85,8 +84,6 @@ const ComplaintColumnChart = ({ complaints }) => {
           </div>
         </div>
       </div>
-      
-
     </div>
   );
 };

@@ -109,7 +109,6 @@ const ComplaintStatus = () => {
     const steps = [];
     const currentStatus = complaint?.status?.toUpperCase() || 'NEW';
     
-
     steps.push({
       status: 'NEW',
       title: 'Complaint submitted by user.',
@@ -118,7 +117,6 @@ const ComplaintStatus = () => {
       icon: '✓'
     });
     
-
     if (['IN PROGRESS', 'RESOLVED', 'CLOSED'].includes(currentStatus)) {
       steps.push({
         status: 'IN PROGRESS',
@@ -129,7 +127,6 @@ const ComplaintStatus = () => {
       });
     }
     
-
     if (['RESOLVED', 'CLOSED'].includes(currentStatus)) {
       steps.push({
         status: 'RESOLVED',
@@ -140,7 +137,6 @@ const ComplaintStatus = () => {
       });
     }
     
-
     if (currentStatus === 'WITHDRAWN') {
       steps.push({
         status: 'WITHDRAWN',

@@ -130,7 +130,6 @@ public class ComplaintController {
         return ResponseEntity.ok(new ComplaintResponse("Complaint withdrawn successfully", id));
     }
 
-    
     static class ComplaintResponse {
         public String message;
         public Long complaintId;

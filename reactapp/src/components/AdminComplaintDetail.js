@@ -108,7 +108,6 @@ const AdminComplaintDetail = () => {
   const handleStatusUpdate = async (newStatus) => {
     try {
       if (newStatus === 'RESOLVED') {
-
         await api.put(`/api/admin/complaints/${id}/resolve`);
         setComplaint(prev => ({ ...prev, status: 'RESOLVED' }));
         setMessage('Complaint marked as resolved. User has been notified.');
