@@ -19,7 +19,6 @@ const ReportsExports = () => {
   ];
 
   useEffect(() => {
-    // Set default date range to last 30 days
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
@@ -73,7 +72,6 @@ const ReportsExports = () => {
         responseType: 'blob'
       });
 
-      // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
