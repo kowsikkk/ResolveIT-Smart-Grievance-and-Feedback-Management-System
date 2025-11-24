@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
+import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -167,17 +169,18 @@ public class AdminController {
         StringWriter stringWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(stringWriter);
 
-        writer.println("Complaint ID,Subject,Category,Priority,Status,Submission Type,Date Created,Submitted By,Assigned To");
+        writer.println("Complaint ID,Subject,Description,Category,Priority,Status,Submission Type,Date Created,Submitted By,Assigned To");
 
         for (Complaint complaint : complaints) {
-            writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+            writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
                 complaint.getId(),
                 escapeCSV(complaint.getSubject()),
+                escapeCSV(complaint.getDescription()),
                 complaint.getCategory() != null ? complaint.getCategory() : "",
                 complaint.getPriority() != null ? complaint.getPriority() : "",
                 complaint.getStatus() != null ? complaint.getStatus() : "",
                 complaint.getSubmissionType() != null ? complaint.getSubmissionType() : "",
-                complaint.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                complaint.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")),
                 complaint.getUser() != null ? complaint.getUser().getUsername() : "Anonymous",
                 complaint.getAssignedTo() != null ? complaint.getAssignedTo().getUsername() : "Unassigned"
             );
@@ -194,12 +197,17 @@ public class AdminController {
             document.open();
             
             Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-            Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
-            Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
+            Font headerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
+            Font normalFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL);
+            Font smallFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL);
             
-            Paragraph title = new Paragraph("COMPLAINTS REPORT", titleFont);
+            Paragraph title = new Paragraph("GRIEVANCE & FEEDBACK MANAGEMENT SYSTEM", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
+            
+            Paragraph subtitle = new Paragraph("COMPLAINTS REPORT", headerFont);
+            subtitle.setAlignment(Element.ALIGN_CENTER);
+            document.add(subtitle);
             
             document.add(new Paragraph(" "));
             
@@ -213,27 +221,48 @@ public class AdminController {
             
             document.add(new Paragraph(" "));
             
-            PdfPTable table = new PdfPTable(6);
-            table.setWidthPercentage(100);
-            table.setWidths(new float[]{1, 3, 1.5f, 1.5f, 1.5f, 2});
+            // Summary Statistics
+            long newCount = complaints.stream().filter(c -> "NEW".equals(c.getStatus())).count();
+            long inProgressCount = complaints.stream().filter(c -> "IN PROGRESS".equals(c.getStatus())).count();
+            long resolvedCount = complaints.stream().filter(c -> "Resolved".equals(c.getStatus())).count();
+            Paragraph stats = new Paragraph(String.format("Status Summary - New: %d | In Progress: %d | Resolved: %d", 
+                newCount, inProgressCount, resolvedCount), normalFont);
+            stats.setAlignment(Element.ALIGN_CENTER);
+            document.add(stats);
             
-            table.addCell(new PdfPCell(new Phrase("ID", headerFont)));
-            table.addCell(new PdfPCell(new Phrase("Subject", headerFont)));
-            table.addCell(new PdfPCell(new Phrase("Category", headerFont)));
-            table.addCell(new PdfPCell(new Phrase("Priority", headerFont)));
-            table.addCell(new PdfPCell(new Phrase("Status", headerFont)));
-            table.addCell(new PdfPCell(new Phrase("Created Date", headerFont)));
+            document.add(new Paragraph(" "));
+            
+            PdfPTable table = new PdfPTable(7);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{0.8f, 2.5f, 2.5f, 1f, 1f, 1.2f, 1.5f});
+            
+            // Headers
+            addTableHeader(table, "ID", headerFont);
+            addTableHeader(table, "Subject", headerFont);
+            addTableHeader(table, "Description", headerFont);
+            addTableHeader(table, "Category", headerFont);
+            addTableHeader(table, "Priority", headerFont);
+            addTableHeader(table, "Status", headerFont);
+            addTableHeader(table, "Date", headerFont);
             
             for (Complaint complaint : complaints) {
-                table.addCell(new PdfPCell(new Phrase(String.valueOf(complaint.getId()), normalFont)));
-                table.addCell(new PdfPCell(new Phrase(complaint.getSubject() != null ? complaint.getSubject() : "", normalFont)));
-                table.addCell(new PdfPCell(new Phrase(complaint.getCategory() != null ? complaint.getCategory() : "", normalFont)));
-                table.addCell(new PdfPCell(new Phrase(complaint.getPriority() != null ? complaint.getPriority() : "", normalFont)));
-                table.addCell(new PdfPCell(new Phrase(complaint.getStatus() != null ? complaint.getStatus() : "", normalFont)));
-                table.addCell(new PdfPCell(new Phrase(complaint.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")), normalFont)));
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(complaint.getId()), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(truncateText(complaint.getSubject(), 40), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(truncateText(complaint.getDescription(), 60), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(complaint.getCategory() != null ? complaint.getCategory() : "", smallFont)));
+                table.addCell(new PdfPCell(new Phrase(complaint.getPriority() != null ? complaint.getPriority() : "", smallFont)));
+                table.addCell(new PdfPCell(new Phrase(complaint.getStatus() != null ? complaint.getStatus() : "", smallFont)));
+                table.addCell(new PdfPCell(new Phrase(complaint.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yy")), smallFont)));
             }
             
             document.add(table);
+            
+            // Footer
+            document.add(new Paragraph(" "));
+            Paragraph footer = new Paragraph("Generated on: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), smallFont);
+            footer.setAlignment(Element.ALIGN_RIGHT);
+            document.add(footer);
+            
             document.close();
             
             return baos.toByteArray();
@@ -245,5 +274,20 @@ public class AdminController {
     private String escapeCSV(String value) {
         if (value == null) return "";
         return value.replace("\"", "\\\"").replace("\n", " ").replace("\r", " ");
+    }
+    
+
+    
+    private void addTableHeader(PdfPTable table, String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setBackgroundColor(new BaseColor(240, 240, 240));
+        table.addCell(cell);
+    }
+    
+    private String truncateText(String text, int maxLength) {
+        if (text == null) return "";
+        if (text.length() <= maxLength) return text;
+        return text.substring(0, maxLength - 3) + "...";
     }
 }

@@ -186,8 +186,7 @@ const ReportsExports = () => {
                 <div className="option-content">
                   <div className="option-icon">📊</div>
                   <div className="option-text">
-                    <strong>CSV</strong>
-                    <span>Comma-separated values for spreadsheet analysis</span>
+                    <strong>CSV Report</strong>
                   </div>
                 </div>
               </label>
@@ -202,13 +201,14 @@ const ReportsExports = () => {
                 <div className="option-content">
                   <div className="option-icon">📄</div>
                   <div className="option-text">
-                    <strong>PDF</strong>
-                    <span>Formatted document for reports and presentations</span>
+                    <strong>PDF Report</strong>
                   </div>
                 </div>
               </label>
             </div>
           </div>
+
+          
 
           <div className="generate-section">
             <button 
@@ -219,7 +219,7 @@ const ReportsExports = () => {
               {loading ? (
                 <>
                   <div className="spinner"></div>
-                  Generating Report...
+                  Generating Professional Report...
                 </>
               ) : (
                 <>
@@ -228,12 +228,12 @@ const ReportsExports = () => {
                     <polyline points="7,10 12,15 17,10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Generate Report
+                  Generate Enhanced Report
                 </>
               )}
             </button>
             <p className="generate-help">
-              Report will be automatically downloaded to your device
+              Professional report with escalation tracking will be downloaded automatically
             </p>
           </div>
         </div>
