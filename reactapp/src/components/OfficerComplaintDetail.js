@@ -14,6 +14,8 @@ const OfficerComplaintDetail = () => {
   const [newPublicMessage, setNewPublicMessage] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [notifyUserPublic, setNotifyUserPublic] = useState(false);
 
   useEffect(() => {
     fetchComplaintDetail();
@@ -109,10 +111,12 @@ const OfficerComplaintDetail = () => {
         complaintId: id,
         senderId: sessionStorage.getItem('userId'),
         content: newPublicMessage,
-        messageType: 'PUBLIC'
+        messageType: 'PUBLIC',
+        notifyUser: notifyUserPublic
       };
 
       await api.post('/api/messages/send', messageData);
+      setNotifyUserPublic(false);
       fetchPublicMessages();
       setMessage('Public message sent successfully');
       setNewPublicMessage('');
@@ -227,21 +231,29 @@ const OfficerComplaintDetail = () => {
                 </div>
               </div>
 
-              {complaint.files && complaint.files.length > 0 && (
-                <div className="attachments-section">
-                  <h4>📎 Attachments</h4>
+              <div className="attachments-section">
+                <h4>📎 Attachments</h4>
+                {complaint.attachmentPath ? (
                   <div className="attachments-list">
-                    {complaint.files.map((file, index) => (
-                      <div key={index} className="attachment-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
-                        </svg>
-                        {file}
-                      </div>
-                    ))}
+                    {complaint.attachmentPath.split(',').map((file, index) => {
+                      const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => file.toLowerCase().endsWith(ext));
+                      return (
+                        <div key={index} className="attachment-item" 
+                          onClick={() => isImage && setPreviewImage(`http://localhost:8080/uploads/${file}`)}
+                          style={{ cursor: isImage ? 'pointer' : 'default' }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
+                          </svg>
+                          {isImage ? '🖼️' : '📎'} {file}
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p style={{ color: '#a0aec0', fontStyle: 'italic', textAlign: 'center', padding: '10px' }}>No attachments</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -331,6 +343,10 @@ const OfficerComplaintDetail = () => {
                   rows="3"
                   required
                 />
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px'}}>
+                  <input type="checkbox" id="notifyUserPublic" checked={notifyUserPublic} onChange={(e) => setNotifyUserPublic(e.target.checked)} />
+                  <label htmlFor="notifyUserPublic" style={{color: '#cbd5e0', fontSize: '14px', cursor: 'pointer'}}>📧 Notify user via email</label>
+                </div>
                 <button type="submit" className="submit-btn primary">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
@@ -342,6 +358,17 @@ const OfficerComplaintDetail = () => {
           </div>
         </div>
       </div>
+
+      {previewImage && (
+        <div className="image-preview-modal" onClick={() => setPreviewImage(null)}>
+          <div className="preview-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-preview" onClick={() => setPreviewImage(null)}>×</button>
+            <img src={previewImage} alt="Attachment" onError={(e) => {
+              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
+            }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

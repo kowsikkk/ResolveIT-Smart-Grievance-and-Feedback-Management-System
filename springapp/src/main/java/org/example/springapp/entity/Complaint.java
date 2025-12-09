@@ -43,4 +43,7 @@ public class Complaint {
     @ManyToOne
     @JoinColumn(name = "assigned_to")
     private User assignedTo;
+    
+    @Column
+    private Integer escalationDays = 30;
 }

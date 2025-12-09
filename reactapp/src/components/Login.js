@@ -58,7 +58,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-left">
         <div className="login-form">
-        <h2>Complaint Portal</h2>
+        <h2>ResolveIT</h2>
         <h3>Welcome Back</h3>
         
         <form onSubmit={handleSubmit}>

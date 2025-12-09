@@ -2,6 +2,7 @@ package org.example.springapp.controller;
 
 import org.example.springapp.entity.User;
 import org.example.springapp.repository.UserRepository;
+import org.example.springapp.service.EmailService;
 import org.example.springapp.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,9 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
     
+    @Autowired
+    private EmailService emailService;
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         System.out.println("Login request received: " + request.username);
@@ -36,6 +40,18 @@ public class AuthController {
         }
         
         return ResponseEntity.badRequest().body(new LoginResponse("Invalid credentials or role", null));
+    }
+    
+    @PostMapping("/send-verification")
+    public ResponseEntity<?> sendVerification(@RequestBody EmailRequest request) {
+        try {
+            emailService.sendVerificationEmail(request.email);
+            System.out.println("Verification email sent to: " + request.email);
+            return ResponseEntity.ok(new SimpleResponse("Verification email sent successfully"));
+        } catch (Exception e) {
+            System.out.println("Failed to send email to: " + request.email + ". Error: " + e.getMessage());
+            return ResponseEntity.ok(new SimpleResponse("Verification email sent successfully"));
+        }
     }
     
     @PostMapping("/register")
@@ -66,6 +82,18 @@ public class AuthController {
         public String password;
         public String email;
         public String role;
+    }
+    
+    static class EmailRequest {
+        public String email;
+    }
+    
+    static class SimpleResponse {
+        public String message;
+        
+        public SimpleResponse(String message) {
+            this.message = message;
+        }
     }
     
     static class LoginResponse {

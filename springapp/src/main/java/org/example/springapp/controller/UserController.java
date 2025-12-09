@@ -39,6 +39,30 @@ public class UserController {
         return ResponseEntity.ok(officers);
     }
 
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody ProfileUpdateRequest request) {
+        Optional<User> userOpt = userRepository.findById(id);
+        
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            
+            if (request.username != null && !request.username.equals(user.getUsername())) {
+                if (userRepository.findByUsername(request.username).isPresent()) {
+                    return ResponseEntity.badRequest().body(new MessageResponse("Username already exists"));
+                }
+                user.setUsername(request.username);
+            }
+            
+            if (request.email != null) {
+                user.setEmail(request.email);
+            }
+            
+            userRepository.save(user);
+            return ResponseEntity.ok(new MessageResponse("Profile updated successfully"));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request, Authentication auth) {
         String username = auth.getName();
@@ -68,6 +92,11 @@ public class UserController {
             this.email = email;
             this.role = role;
         }
+    }
+
+    static class ProfileUpdateRequest {
+        public String username;
+        public String email;
     }
 
     static class PasswordResetRequest {

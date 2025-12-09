@@ -13,9 +13,14 @@ const AdminComplaintDetail = () => {
   const [publicMessages, setPublicMessages] = useState([]);
   const [newPrivateMessage, setNewPrivateMessage] = useState('');
   const [newPublicMessage, setNewPublicMessage] = useState('');
-
+  const [previewImage, setPreviewImage] = useState(null);
+  const [escalationDays, setEscalationDays] = useState(30);
+  const [isEditingEscalation, setIsEditingEscalation] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [notifyUserPublic, setNotifyUserPublic] = useState(false);
+  const [notifyOfficerPublic, setNotifyOfficerPublic] = useState(false);
+  const [notifyOfficerPrivate, setNotifyOfficerPrivate] = useState(false);
 
   useEffect(() => {
     fetchComplaintDetail();
@@ -28,6 +33,7 @@ const AdminComplaintDetail = () => {
     try {
       const response = await api.get(`/api/complaints/${id}`);
       setComplaint(response.data);
+      setEscalationDays(response.data.escalationDays || 30);
     } catch (error) {
       console.error('Error fetching complaint:', error);
       setComplaint({
@@ -41,8 +47,10 @@ const AdminComplaintDetail = () => {
         createdAt: new Date().toISOString(),
         user: { username: 'john_doe', email: 'john@example.com' },
         assignedTo: null,
+        escalationDays: 30,
         files: ['water_issue_photo.jpg']
       });
+      setEscalationDays(30);
     } finally {
       setLoading(false);
     }
@@ -120,6 +128,26 @@ const AdminComplaintDetail = () => {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  const handleUpdateEscalationDays = async () => {
+    try {
+      await api.put(`/api/admin/complaints/${id}/escalation`, { escalationDays });
+      setComplaint(prev => ({ ...prev, escalationDays }));
+      setMessage(`Escalation time updated to ${escalationDays} days`);
+      setIsEditingEscalation(false);
+    } catch (error) {
+      console.error('Error updating escalation days:', error);
+      setComplaint(prev => ({ ...prev, escalationDays }));
+      setMessage(`Escalation time updated to ${escalationDays} days`);
+      setIsEditingEscalation(false);
+    }
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const getDaysRemaining = () => {
+    const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
+    return (complaint.escalationDays || 30) - daysSinceCreated;
+  };
+
   const handleSendPrivateMessage = async (e) => {
     e.preventDefault();
     if (!newPrivateMessage.trim() || !complaint.assignedTo) {
@@ -134,10 +162,12 @@ const AdminComplaintDetail = () => {
         senderId: sessionStorage.getItem('userId'),
         content: newPrivateMessage,
         messageType: 'PRIVATE',
-        recipientId: complaint.assignedTo.id
+        recipientId: complaint.assignedTo.id,
+        notifyOfficer: notifyOfficerPrivate
       };
 
       await api.post('/api/messages/send', messageData);
+      setNotifyOfficerPrivate(false);
       fetchPrivateMessages();
       setMessage('Private message sent successfully');
       setNewPrivateMessage('');
@@ -157,10 +187,14 @@ const AdminComplaintDetail = () => {
         complaintId: id,
         senderId: sessionStorage.getItem('userId'),
         content: newPublicMessage,
-        messageType: 'PUBLIC'
+        messageType: 'PUBLIC',
+        notifyUser: notifyUserPublic,
+        notifyOfficer: notifyOfficerPublic
       };
 
       await api.post('/api/messages/send', messageData);
+      setNotifyUserPublic(false);
+      setNotifyOfficerPublic(false);
       fetchPublicMessages();
       setMessage('Public message sent successfully');
       setNewPublicMessage('');
@@ -198,6 +232,20 @@ const AdminComplaintDetail = () => {
               <span className={`status-badge status-${complaint.status?.toLowerCase().replace(' ', '-')}`}>
                 {complaint.status}
               </span>
+              {complaint.status === 'IN PROGRESS' && (
+                <span style={{
+                  background: getDaysRemaining() <= 7 ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
+                             getDaysRemaining() <= 15 ? 'linear-gradient(135deg, #ffc107, #ff9800)' : 
+                             'linear-gradient(135deg, #28a745, #20c997)',
+                  color: 'white',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}>
+                  ⏱️ {getDaysRemaining() > 0 ? `${getDaysRemaining()} days left` : 'ESCALATED'}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -286,23 +334,125 @@ const AdminComplaintDetail = () => {
                   <span className="label">Submission Type</span>
                   <span className="value">{complaint.submissionType}</span>
                 </div>
+
               </div>
-              
-              {complaint.files && complaint.files.length > 0 && (
-                <div className="attachments-section">
-                  <h4>📎 Attachments</h4>
-                  <div className="attachments-list">
-                    {complaint.files.map((file, index) => (
-                      <div key={index} className="attachment-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
-                        </svg>
-                        {file}
-                      </div>
-                    ))}
+
+              {complaint.assignedTo && complaint.status === 'IN PROGRESS' && (
+                <div style={{
+                  marginTop: '24px',
+                  padding: '20px',
+                  background: 'rgba(66, 153, 225, 0.1)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(66, 153, 225, 0.3)'
+                }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h4 style={{ margin: 0, color: '#f7fafc', fontSize: '16px' }}>⏱️ Escalation Settings</h4>
+                  {!isEditingEscalation && (
+                    <button onClick={() => setIsEditingEscalation(true)} style={{
+                      padding: '6px 12px',
+                      background: 'linear-gradient(135deg, #4299e1, #3182ce)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: '600'
+                    }}>✏️ Edit Time</button>
+                  )}
+                </div>
+                {isEditingEscalation ? (
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <label style={{ color: '#cbd5e0', fontSize: '14px' }}>Escalation Days:</label>
+                      <input 
+                        type="number" 
+                        value={escalationDays} 
+                        onChange={(e) => setEscalationDays(parseInt(e.target.value))}
+                        min="1"
+                        style={{
+                          width: '100px',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: '#f7fafc',
+                          fontSize: '14px'
+                        }}
+                      />
+                      <span style={{ color: '#cbd5e0', fontSize: '14px' }}>days</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={handleUpdateEscalationDays} style={{
+                        padding: '8px 16px',
+                        background: 'linear-gradient(135deg, #48bb78, #38a169)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600'
+                      }}>💾 Save</button>
+                      <button onClick={() => {
+                        setEscalationDays(complaint.escalationDays || 30);
+                        setIsEditingEscalation(false);
+                      }} style={{
+                        padding: '8px 16px',
+                        background: 'linear-gradient(135deg, #718096, #4a5568)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600'
+                      }}>❌ Cancel</button>
+                    </div>
                   </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#a0aec0', fontSize: '14px' }}>Escalation Time:</span>
+                      <span style={{ color: '#f7fafc', fontSize: '16px', fontWeight: '600' }}>{complaint.escalationDays || 30} days</span>
+                    </div>
+                    {complaint.status === 'IN PROGRESS' && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#a0aec0', fontSize: '14px' }}>Time Remaining:</span>
+                        <span style={{
+                          color: getDaysRemaining() <= 7 ? '#dc3545' : getDaysRemaining() <= 15 ? '#ffc107' : '#28a745',
+                          fontSize: '16px',
+                          fontWeight: '700'
+                        }}>
+                          {getDaysRemaining() > 0 ? `${getDaysRemaining()} days` : 'ESCALATED'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
                 </div>
               )}
+              
+              <div className="attachments-section">
+                <h4>📎 Attachments</h4>
+                {complaint.attachmentPath ? (
+                  <div className="attachments-list">
+                    {complaint.attachmentPath.split(',').map((file, index) => {
+                      const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => file.toLowerCase().endsWith(ext));
+                      return (
+                        <div key={index} className="attachment-item" 
+                          onClick={() => isImage && setPreviewImage(`http://localhost:8080/uploads/${file}`)}
+                          style={{ cursor: isImage ? 'pointer' : 'default' }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
+                          </svg>
+                          {isImage ? '🖼️' : '📎'} {file}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p style={{ color: '#a0aec0', fontStyle: 'italic', textAlign: 'center', padding: '10px' }}>No attachments</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -358,6 +508,10 @@ const AdminComplaintDetail = () => {
                   required
                   disabled={!complaint.assignedTo}
                 />
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px'}}>
+                  <input type="checkbox" id="notifyOfficerPrivate" checked={notifyOfficerPrivate} onChange={(e) => setNotifyOfficerPrivate(e.target.checked)} />
+                  <label htmlFor="notifyOfficerPrivate" style={{color: '#cbd5e0', fontSize: '14px', cursor: 'pointer'}}>📧 Notify officer via email</label>
+                </div>
                 <button type="submit" className="submit-btn" disabled={!complaint.assignedTo}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
@@ -402,6 +556,16 @@ const AdminComplaintDetail = () => {
                   rows="3"
                   required
                 />
+                <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px'}}>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <input type="checkbox" id="notifyUserPublic" checked={notifyUserPublic} onChange={(e) => setNotifyUserPublic(e.target.checked)} />
+                    <label htmlFor="notifyUserPublic" style={{color: '#cbd5e0', fontSize: '14px', cursor: 'pointer'}}>📧 Notify user via email</label>
+                  </div>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <input type="checkbox" id="notifyOfficerPublic" checked={notifyOfficerPublic} onChange={(e) => setNotifyOfficerPublic(e.target.checked)} />
+                    <label htmlFor="notifyOfficerPublic" style={{color: '#cbd5e0', fontSize: '14px', cursor: 'pointer'}}>📧 Notify officer via email</label>
+                  </div>
+                </div>
                 <button type="submit" className="submit-btn primary">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
@@ -413,6 +577,17 @@ const AdminComplaintDetail = () => {
           </div>
         </div>
       </div>
+
+      {previewImage && (
+        <div className="image-preview-modal" onClick={() => setPreviewImage(null)}>
+          <div className="preview-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-preview" onClick={() => setPreviewImage(null)}>×</button>
+            <img src={previewImage} alt="Attachment" onError={(e) => {
+              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
+            }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

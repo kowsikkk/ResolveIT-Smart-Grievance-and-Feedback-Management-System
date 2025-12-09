@@ -8,25 +8,53 @@ const OfficerDashboard = () => {
   const [complaints, setComplaints] = useState([]);
   const [escalatedComplaints, setEscalatedComplaints] = useState([]);
   const [stats, setStats] = useState({ assigned: 0, inProgress: 0, resolved: 0 });
+  const [sortBy, setSortBy] = useState('date');
   const [filter, setFilter] = useState('all');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const isComplaintEscalated = (complaint) => {
+  const getEscalationDays = (complaint) => {
+    return complaint.escalationDays || 30;
+  };
+
+  const getDaysRemaining = (complaint) => {
     const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
-    return complaint.status === 'IN PROGRESS' && daysSinceCreated > 2;
+    const escalationDays = getEscalationDays(complaint);
+    return escalationDays - daysSinceCreated;
+  };
+
+  const isComplaintEscalated = (complaint) => {
+    return complaint.status === 'IN PROGRESS' && getDaysRemaining(complaint) <= 0;
   };
 
   useEffect(() => {
     fetchAssignedComplaints();
-    fetchStats();
   }, [filter]);
+
+  useEffect(() => {
+    if (complaints.length > 0) {
+      const allComplaints = complaints;
+      setStats({
+        assigned: allComplaints.length,
+        inProgress: allComplaints.filter(c => c.status === 'IN PROGRESS').length,
+        resolved: allComplaints.filter(c => c.status === 'Resolved').length
+      });
+    }
+  }, [complaints]);
 
   const fetchAssignedComplaints = async () => {
     try {
       const officerId = sessionStorage.getItem('userId');
       const response = await api.get(`/api/officer/complaints/${officerId}`);
-      let filteredComplaints = response.data;
+      const allComplaints = response.data;
+      
+      setStats({
+        assigned: allComplaints.length,
+        inProgress: allComplaints.filter(c => c.status === 'IN PROGRESS').length,
+        resolved: allComplaints.filter(c => c.status === 'Resolved').length
+      });
+      
+      let filteredComplaints = allComplaints;
       if (filter !== 'all') {
         filteredComplaints = filteredComplaints.filter(c => c.status === filter);
       }
@@ -61,6 +89,12 @@ const OfficerDashboard = () => {
         }
       ];
       
+      setStats({
+        assigned: demoComplaints.length,
+        inProgress: demoComplaints.filter(c => c.status === 'IN PROGRESS').length,
+        resolved: demoComplaints.filter(c => c.status === 'Resolved').length
+      });
+      
       let filteredComplaints = demoComplaints;
       if (filter !== 'all') {
         filteredComplaints = filteredComplaints.filter(c => c.status === filter);
@@ -71,28 +105,12 @@ const OfficerDashboard = () => {
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const officerId = sessionStorage.getItem('userId');
-      const response = await api.get(`/api/officer/stats/${officerId}`);
-      setStats(response.data);
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      setStats({
-        assigned: 3,
-        inProgress: 2,
-        resolved: 1
-      });
-    }
-  };
-
   const handleStatusUpdate = async (complaintId, newStatus) => {
     try {
       await api.put(`/api/officer/complaints/${complaintId}/status`, { status: newStatus });
       setMessage(`Complaint #${complaintId} status updated to ${newStatus}`);
       
       fetchAssignedComplaints();
-      fetchStats();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error updating complaint status:', error);
@@ -102,6 +120,32 @@ const OfficerDashboard = () => {
       setMessage(`Complaint #${complaintId} status updated to ${newStatus}`);
       setTimeout(() => setMessage(''), 3000);
     }
+  };
+
+  const getSortedComplaints = () => {
+    let sorted = [...complaints];
+    
+    switch(sortBy) {
+      case 'status':
+        const statusOrder = { 'IN PROGRESS': 1, 'Resolved': 2 };
+        sorted.sort((a, b) => (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3));
+        break;
+      case 'priority':
+        const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
+        sorted.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
+        break;
+      case 'escalated':
+        sorted.sort((a, b) => {
+          const aEscalated = isComplaintEscalated(a) ? 1 : 0;
+          const bEscalated = isComplaintEscalated(b) ? 1 : 0;
+          return bEscalated - aEscalated;
+        });
+        break;
+      default:
+        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    
+    return sorted;
   };
 
   const handleLogout = () => {
@@ -116,11 +160,13 @@ const OfficerDashboard = () => {
       <div className="dashboard-header">
         <h1>Officer Dashboard</h1>
         <div className="header-actions">
-          <button onClick={() => {
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+          <div className="profile-avatar" onClick={() => {
             sessionStorage.setItem('loginRole', 'officer');
             navigate('/profile');
-          }} className="profile-btn">Profile</button>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
+          }}>
+            <span>{sessionStorage.getItem('username')?.charAt(0).toUpperCase() || 'O'}</span>
+          </div>
         </div>
       </div>
 
@@ -157,13 +203,15 @@ const OfficerDashboard = () => {
         </div>
 
         <div className="dashboard-card">
-          <div className="card-header">
+          <div className="card-header-with-sort">
             <h2>My Assigned Complaints ({complaints.length})</h2>
-            <div className="filter-controls">
-              <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
-                <option value="all">All Status</option>
-                <option value="IN PROGRESS">In Progress</option>
-                <option value="Resolved">Resolved</option>
+            <div className="sort-controls">
+              <label>Sort by:</label>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
+                <option value="date">Date (Newest)</option>
+                <option value="status">Status</option>
+                <option value="priority">Priority</option>
+                <option value="escalated">Escalated First</option>
               </select>
             </div>
           </div>
@@ -172,7 +220,7 @@ const OfficerDashboard = () => {
             {complaints.length === 0 ? (
               <p>No complaints assigned to you</p>
             ) : (
-              complaints.map(complaint => (
+              getSortedComplaints().map(complaint => (
                 <div key={complaint.id} className={`complaint-item admin-complaint-item ${isComplaintEscalated(complaint) ? 'escalated-complaint' : ''}`}>
                   <div className="complaint-header" onClick={() => navigate(`/officer/complaint/${complaint.id}`)}>
                     <h3>#{complaint.id} - {complaint.subject}</h3>

@@ -16,6 +16,7 @@ const ComplaintForm = () => {
   const [priority, setPriority] = useState('');
   const [success, setSuccess] = useState('');
   const [files, setFiles] = useState([]);
+  const [previewFile, setPreviewFile] = useState(null);
 
   const handleFileUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -24,6 +25,16 @@ const ComplaintForm = () => {
 
   const removeFile = (index) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleFileClick = (file) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewFile({ url: e.target.result, name: file.name, type: file.type });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -56,11 +67,12 @@ const ComplaintForm = () => {
         formData.append('files', file);
       });
       
-      await api.post('/api/complaints/submit', formData, {
+      const response = await api.post('/api/complaints/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
+      console.log('Response:', response);
       
       if (isAuthenticated) {
         sessionStorage.setItem('successMessage', 'Complaint submitted successfully!');
@@ -71,6 +83,8 @@ const ComplaintForm = () => {
       }
     } catch (error) {
       console.error('Error submitting complaint:', error);
+      console.error('Error details:', error.response?.data);
+      alert('Error submitting complaint: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -148,7 +162,12 @@ const ComplaintForm = () => {
                 <div className="uploaded-files">
                   {files.map((file, index) => (
                     <div key={index} className="file-item">
-                      <span>{file.name}</span>
+                      <span 
+                        onClick={() => handleFileClick(file)} 
+                        style={{ cursor: file.type.startsWith('image/') ? 'pointer' : 'default', flex: 1 }}
+                      >
+                        {file.name}
+                      </span>
                       <button type="button" onClick={() => removeFile(index)}>×</button>
                     </div>
                   ))}
@@ -167,6 +186,16 @@ const ComplaintForm = () => {
           <button type="submit" className="submit-btn">Submit Complaint</button>
         </form>
       </div>
+
+      {previewFile && (
+        <div className="image-preview-modal" onClick={() => setPreviewFile(null)}>
+          <div className="preview-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-preview" onClick={() => setPreviewFile(null)}>×</button>
+            <img src={previewFile.url} alt={previewFile.name} />
+            <p>{previewFile.name}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

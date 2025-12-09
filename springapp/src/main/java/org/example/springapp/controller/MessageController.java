@@ -6,11 +6,13 @@ import org.example.springapp.entity.User;
 import org.example.springapp.repository.MessageRepository;
 import org.example.springapp.repository.ComplaintRepository;
 import org.example.springapp.repository.UserRepository;
+import org.example.springapp.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -25,6 +27,9 @@ public class MessageController {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private EmailService emailService;
     
     @GetMapping("/complaint/{complaintId}/public")
     public ResponseEntity<List<Message>> getPublicMessages(@PathVariable Long complaintId) {
@@ -53,6 +58,10 @@ public class MessageController {
             String messageType = request.get("messageType").toString();
             Long recipientId = request.get("recipientId") != null ? 
                 Long.valueOf(request.get("recipientId").toString()) : null;
+            Boolean notifyUser = request.get("notifyUser") != null ? 
+                Boolean.valueOf(request.get("notifyUser").toString()) : false;
+            Boolean notifyOfficer = request.get("notifyOfficer") != null ? 
+                Boolean.valueOf(request.get("notifyOfficer").toString()) : false;
             
             Complaint complaint = complaintRepository.findById(complaintId)
                 .orElseThrow(() -> new RuntimeException("Complaint not found"));
@@ -72,6 +81,66 @@ public class MessageController {
             }
             
             Message savedMessage = messageRepository.save(message);
+            
+            // Send email notifications based on sender role and message type
+            String senderRole = sender.getRole().toUpperCase();
+            System.out.println("Processing email - Sender: " + senderRole + ", Type: " + messageType + ", NotifyUser: " + notifyUser + ", NotifyOfficer: " + notifyOfficer);
+            
+            if ("USER".equals(senderRole)) {
+                List<User> admins = userRepository.findByRole("admin");
+                for (User admin : admins) {
+                    if (admin.getEmail() != null && !admin.getEmail().isEmpty()) {
+                        emailService.sendMessageNotification(admin.getEmail(), "User", content, 
+                            complaint.getSubject(), complaintId, messageType);
+                    }
+                }
+                if (complaint.getAssignedTo() != null && complaint.getAssignedTo().getEmail() != null && !complaint.getAssignedTo().getEmail().isEmpty()) {
+                    emailService.sendMessageNotification(complaint.getAssignedTo().getEmail(), "User", content, 
+                        complaint.getSubject(), complaintId, messageType);
+                }
+            } else if ("ADMIN".equals(senderRole)) {
+                if ("PUBLIC".equals(messageType)) {
+                    if (notifyUser) {
+                        System.out.println("User email: " + (complaint.getUser() != null ? complaint.getUser().getEmail() : "null"));
+                        if (complaint.getUser() != null && complaint.getUser().getEmail() != null && !complaint.getUser().getEmail().isEmpty()) {
+                            emailService.sendMessageNotification(complaint.getUser().getEmail(), "Admin", content, 
+                                complaint.getSubject(), complaintId, messageType);
+                        }
+                    }
+                    if (notifyOfficer && complaint.getAssignedTo() != null && complaint.getAssignedTo().getEmail() != null && !complaint.getAssignedTo().getEmail().isEmpty()) {
+                        emailService.sendMessageNotification(complaint.getAssignedTo().getEmail(), "Admin", content, 
+                            complaint.getSubject(), complaintId, messageType);
+                    }
+                } else if ("PRIVATE".equals(messageType)) {
+                    if (notifyOfficer && complaint.getAssignedTo() != null && complaint.getAssignedTo().getEmail() != null && !complaint.getAssignedTo().getEmail().isEmpty()) {
+                        emailService.sendMessageNotification(complaint.getAssignedTo().getEmail(), "Admin", content, 
+                            complaint.getSubject(), complaintId, messageType);
+                    }
+                }
+            } else if ("OFFICER".equals(senderRole)) {
+                if ("PUBLIC".equals(messageType)) {
+                    List<User> admins = userRepository.findByRole("admin");
+                    for (User admin : admins) {
+                        if (admin.getEmail() != null && !admin.getEmail().isEmpty()) {
+                            emailService.sendMessageNotification(admin.getEmail(), "Officer", content, 
+                                complaint.getSubject(), complaintId, messageType);
+                        }
+                    }
+                    if (notifyUser && complaint.getUser() != null && complaint.getUser().getEmail() != null && !complaint.getUser().getEmail().isEmpty()) {
+                        emailService.sendMessageNotification(complaint.getUser().getEmail(), "Officer", content, 
+                            complaint.getSubject(), complaintId, messageType);
+                    }
+                } else if ("PRIVATE".equals(messageType)) {
+                    List<User> admins = userRepository.findByRole("admin");
+                    for (User admin : admins) {
+                        if (admin.getEmail() != null && !admin.getEmail().isEmpty()) {
+                            emailService.sendMessageNotification(admin.getEmail(), "Officer", content, 
+                                complaint.getSubject(), complaintId, messageType);
+                        }
+                    }
+                }
+            }
+            
             return ResponseEntity.ok(savedMessage);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

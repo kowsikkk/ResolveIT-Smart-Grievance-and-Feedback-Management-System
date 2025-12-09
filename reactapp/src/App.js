@@ -12,6 +12,7 @@ import EscalationDetail from './components/EscalationDetail';
 import ReportsExports from './components/ReportsExports';
 import OfficerDashboard from './components/OfficerDashboard';
 import OfficerComplaintDetail from './components/OfficerComplaintDetail';
+import EmailVerification from './components/EmailVerification';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -22,6 +23,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

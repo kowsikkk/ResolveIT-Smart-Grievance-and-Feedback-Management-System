@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/axiosConfig';
 import PriorityPieChart from './PriorityPieChart';
-import ComplaintColumnChart from './ComplaintColumnChart';
+import CategoryChart from './CategoryChart';
 import './Dashboard.css';
 import './AdminDashboard.css';
 
@@ -15,6 +15,12 @@ const AdminDashboard = () => {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+
+  const getDaysRemaining = (complaint) => {
+    const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
+    const escalationDays = complaint.escalationDays || 30;
+    return escalationDays - daysSinceCreated;
+  };
 
   useEffect(() => {
     fetchComplaints();
@@ -33,6 +39,7 @@ const AdminDashboard = () => {
       if (priorityFilter !== 'all') {
         filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
       }
+      filteredComplaints.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setComplaints(filteredComplaints);
     } catch (error) {
       console.error('Error fetching complaints from database:', error);
@@ -107,6 +114,7 @@ const AdminDashboard = () => {
       if (priorityFilter !== 'all') {
         filteredComplaints = filteredComplaints.filter(c => c.priority === priorityFilter);
       }
+      filteredComplaints.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setComplaints(filteredComplaints);
     }
   };
@@ -231,11 +239,13 @@ const AdminDashboard = () => {
             </svg>
             Generate
           </button>
-          <button onClick={() => {
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+          <div className="profile-avatar" onClick={() => {
             sessionStorage.setItem('loginRole', 'admin');
             navigate('/profile');
-          }} className="profile-btn">Profile</button>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
+          }}>
+            <span>{sessionStorage.getItem('username')?.charAt(0).toUpperCase() || 'A'}</span>
+          </div>
         </div>
       </div>
 
@@ -266,7 +276,7 @@ const AdminDashboard = () => {
 
         <div className="charts-container">
           <PriorityPieChart complaints={complaints} />
-          <ComplaintColumnChart complaints={complaints} />
+          <CategoryChart complaints={complaints} />
         </div>
 
         <div className="dashboard-card escalation-card">
@@ -279,7 +289,6 @@ const AdminDashboard = () => {
               <div className="no-escalation-message">
                 <div className="success-icon">✅</div>
                 <p>No complaints require escalation at this time</p>
-                <small>All IN PROGRESS complaints are within the 2-day threshold</small>
               </div>
             ) : (
               <div className="escalated-complaints-grid">
@@ -360,6 +369,22 @@ const AdminDashboard = () => {
             ) : (
               complaints.map(complaint => (
                 <div key={complaint.id} className="complaint-item admin-complaint-item">
+                  {complaint.status === 'IN PROGRESS' && complaint.assignedTo && (
+                    <div className="time-remaining-badge" style={{
+                      background: getDaysRemaining(complaint) <= 7 ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
+                                 getDaysRemaining(complaint) <= 15 ? 'linear-gradient(135deg, #ffc107, #ff9800)' : 
+                                 'linear-gradient(135deg, #28a745, #20c997)',
+                      color: 'white',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      marginBottom: '8px',
+                      display: 'inline-block'
+                    }}>
+                      ⏱️ {getDaysRemaining(complaint) > 0 ? `${getDaysRemaining(complaint)} days remaining` : 'ESCALATED'}
+                    </div>
+                  )}
                   <div className="complaint-header" onClick={() => navigate(`/admin/complaint/${complaint.id}`)}>
                     <h3>#{complaint.id} - {complaint.subject}</h3>
                     <div className="complaint-badges">

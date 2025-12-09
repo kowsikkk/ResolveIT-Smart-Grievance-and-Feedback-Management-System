@@ -7,7 +7,7 @@ import org.example.springapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity; 
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -88,6 +88,19 @@ public class AdminController {
             complaint.setStatus(status);
             complaintRepository.save(complaint);
             return ResponseEntity.ok("Status updated successfully");
+        }
+        return ResponseEntity.badRequest().body("Invalid complaint ID");
+    }
+
+    @PutMapping("/complaints/{id}/escalation")
+    public ResponseEntity<String> updateEscalationDays(@PathVariable Long id, @RequestBody Map<String, Integer> request) {
+        Integer escalationDays = request.get("escalationDays");
+        Complaint complaint = complaintRepository.findById(id).orElse(null);
+        
+        if (complaint != null) {
+            complaint.setEscalationDays(escalationDays);
+            complaintRepository.save(complaint);
+            return ResponseEntity.ok("Escalation days updated successfully");
         }
         return ResponseEntity.badRequest().body("Invalid complaint ID");
     }

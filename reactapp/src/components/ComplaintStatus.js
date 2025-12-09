@@ -13,6 +13,7 @@ const ComplaintStatus = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     fetchComplaintDetails();
@@ -197,6 +198,15 @@ const ComplaintStatus = () => {
   const canEdit = complaint?.status === 'NEW';
   const canWithdraw = complaint?.status !== 'RESOLVED' && complaint?.status !== 'WITHDRAWN' && complaint?.status !== 'CLOSED';
 
+  const handleAttachmentClick = (fileName) => {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    const isImage = imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+    
+    if (isImage) {
+      setPreviewImage(`http://localhost:8080/uploads/${fileName}`);
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading complaint details...</div>;
   }
@@ -316,18 +326,28 @@ const ComplaintStatus = () => {
             </div>
           )}
 
-          {complaint.files && complaint.files.length > 0 && (
-            <div className="form-field">
-              <label>📎 Attached Files</label>
+          <div className="form-field">
+            <label>📎 Attachments</label>
+            {complaint.attachmentPath ? (
               <div className="file-list">
-                {complaint.files.map((file, index) => (
-                  <div key={index} className="file-item">
-                    <span>📎 {file}</span>
-                  </div>
-                ))}
+                {complaint.attachmentPath.split(',').map((file, index) => {
+                  const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].some(ext => file.toLowerCase().endsWith(ext));
+                  return (
+                    <div key={index} className="file-item" 
+                      onClick={() => handleAttachmentClick(file)}
+                      style={{ cursor: isImage ? 'pointer' : 'default' }}
+                    >
+                      <span>{isImage ? '🖼️' : '📎'} {file}</span>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="no-attachments">
+                <span>No attachments</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="progress-communication-wrapper">
@@ -402,6 +422,17 @@ const ComplaintStatus = () => {
           </div>
         </div>
       </div>
+
+      {previewImage && (
+        <div className="image-preview-modal" onClick={() => setPreviewImage(null)}>
+          <div className="preview-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-preview" onClick={() => setPreviewImage(null)}>×</button>
+            <img src={previewImage} alt="Attachment" onError={(e) => {
+              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3EImage not found%3C/text%3E%3C/svg%3E';
+            }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

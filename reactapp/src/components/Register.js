@@ -11,6 +11,9 @@ const Register = () => {
   const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [showVerifyButton, setShowVerifyButton] = useState(false);
 
   useEffect(() => {
     const message = sessionStorage.getItem('successMessage');
@@ -21,8 +24,51 @@ const Register = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const checkVerification = () => {
+      if (email && localStorage.getItem(`verified_${email}`) === 'true' && !emailVerified) {
+        setEmailVerified(true);
+        setSuccessMessage('Email verified successfully! You can now register.');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
+    };
+    
+    if (email) {
+      checkVerification();
+      const interval = setInterval(checkVerification, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [email, emailVerified]);
+
+  const handleEmailChange = (e) => {
+    const emailValue = e.target.value;
+    setEmail(emailValue);
+    setShowVerifyButton(emailValue.includes('@') && emailValue.includes('.'));
+    setEmailVerified(false);
+    setVerificationSent(false);
+    localStorage.removeItem(`verified_${emailValue}`);
+  };
+
+  const handleVerifyEmail = async () => {
+    try {
+      await api.post('/api/auth/send-verification', { email });
+      setVerificationSent(true);
+      setSuccessMessage('Verification email sent! Please check your inbox.');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      setError('Failed to send verification email.');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!emailVerified) {
+      setError('Please verify your email before registering.');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+    
     try {
       const response = await api.post('/api/auth/register', {
         username,
@@ -32,6 +78,7 @@ const Register = () => {
       });
       
       if (response.data.userId && response.data.token) {
+        localStorage.removeItem(`verified_${email}`);
         sessionStorage.setItem('token', response.data.token);
         sessionStorage.setItem('userId', response.data.userId);
         sessionStorage.setItem('username', username);
@@ -40,6 +87,9 @@ const Register = () => {
     } catch (error) {
       if (error.response?.status === 409) {
         setError('Username or email already exists.');
+        localStorage.removeItem(`verified_${email}`);
+        setEmailVerified(false);
+        setVerificationSent(false);
       } else if (error.response?.status === 400) {
         setError('Invalid data. Please check all fields.');
       } else {
@@ -59,7 +109,7 @@ const Register = () => {
       </div>
       <div className="register-right">
         <div className="register-form">
-        <h2>Complaint Portal</h2>
+        <h2>ResolveIT</h2>
         <h3>Create Account</h3>
         
         <form onSubmit={handleSubmit}>
@@ -76,13 +126,32 @@ const Register = () => {
           
           <div className="form-group">
             <label>Email</label>
-            <input
-              type="email"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="email-input-container">
+              <input
+                type="email"
+                placeholder="Enter email"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                className={emailVerified ? 'verified' : ''}
+              />
+              {showVerifyButton && !emailVerified && (
+                <button
+                  type="button"
+                  onClick={handleVerifyEmail}
+                  className="verify-btn"
+                  disabled={verificationSent}
+                >
+                  {verificationSent ? 'Sent' : 'Verify'}
+                </button>
+              )}
+              {emailVerified && (
+                <span className="verified-icon">✓</span>
+              )}
+            </div>
+            {verificationSent && !emailVerified && (
+              <p className="verification-note">Check your email and click the verification link</p>
+            )}
           </div>
           
           <div className="form-group">
