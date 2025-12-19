@@ -3,6 +3,7 @@ package org.example.springapp.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,6 +12,7 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Async
     public void sendVerificationEmail(String toEmail) {
         String token = java.util.UUID.randomUUID().toString();
         SimpleMailMessage message = new SimpleMailMessage();
@@ -25,6 +27,7 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    @Async
     public void sendMessageNotification(String toEmail, String senderRole, String messageContent, String complaintSubject, Long complaintId, String messageType) {
         System.out.println("Sending email to: " + toEmail + " from " + senderRole);
         try {

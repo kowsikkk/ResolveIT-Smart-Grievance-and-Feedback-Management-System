@@ -50,12 +50,15 @@ const Register = () => {
   };
 
   const handleVerifyEmail = async () => {
+    setVerificationSent(true);
+    setSuccessMessage('Sending verification email...');
+    
     try {
       await api.post('/api/auth/send-verification', { email });
-      setVerificationSent(true);
       setSuccessMessage('Verification email sent! Please check your inbox.');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
+      setVerificationSent(false);
       setError('Failed to send verification email.');
       setTimeout(() => setError(''), 3000);
     }
