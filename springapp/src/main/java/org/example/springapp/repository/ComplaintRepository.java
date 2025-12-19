@@ -13,6 +13,6 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
     List<Complaint> findByAssignedToId(Long assignedToId);
     long countByStatus(String status);
     
-    @Query("SELECT c FROM Complaint c WHERE c.status = 'IN PROGRESS' AND DATEDIFF(CURRENT_TIMESTAMP, c.createdAt) > COALESCE(c.escalationDays, 30) ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM Complaint c WHERE c.status = 'IN PROGRESS' AND DATEDIFF(CURRENT_TIMESTAMP, c.createdAt) >= COALESCE(c.escalationDays, 30) ORDER BY c.createdAt ASC")
     List<Complaint> findEscalatedComplaints();
 }

@@ -14,7 +14,7 @@ const OfficerDashboard = () => {
   const navigate = useNavigate();
 
   const getEscalationDays = (complaint) => {
-    return complaint.escalationDays || 30;
+    return complaint.escalationDays !== null && complaint.escalationDays !== undefined ? complaint.escalationDays : 30;
   };
 
   const getDaysRemaining = (complaint) => {

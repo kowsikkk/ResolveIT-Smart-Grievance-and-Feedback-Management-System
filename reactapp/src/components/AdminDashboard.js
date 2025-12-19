@@ -18,7 +18,7 @@ const AdminDashboard = () => {
 
   const getDaysRemaining = (complaint) => {
     const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
-    const escalationDays = complaint.escalationDays || 30;
+    const escalationDays = complaint.escalationDays !== null && complaint.escalationDays !== undefined ? complaint.escalationDays : 30;
     return escalationDays - daysSinceCreated;
   };
 
@@ -371,7 +371,8 @@ const AdminDashboard = () => {
                 <div key={complaint.id} className="complaint-item admin-complaint-item">
                   {complaint.status === 'IN PROGRESS' && complaint.assignedTo && (
                     <div className="time-remaining-badge" style={{
-                      background: getDaysRemaining(complaint) <= 7 ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
+                      background: getDaysRemaining(complaint) < 0 ? 'linear-gradient(135deg, #dc3545, #c82333)' :
+                                 getDaysRemaining(complaint) <= 7 ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
                                  getDaysRemaining(complaint) <= 15 ? 'linear-gradient(135deg, #ffc107, #ff9800)' : 
                                  'linear-gradient(135deg, #28a745, #20c997)',
                       color: 'white',
@@ -382,7 +383,7 @@ const AdminDashboard = () => {
                       marginBottom: '8px',
                       display: 'inline-block'
                     }}>
-                      ⏱️ {getDaysRemaining(complaint) > 0 ? `${getDaysRemaining(complaint)} days remaining` : 'ESCALATED'}
+                      ⏱️ {getDaysRemaining(complaint) >= 0 ? `${getDaysRemaining(complaint)} days remaining` : 'ESCALATED'}
                     </div>
                   )}
                   <div className="complaint-header" onClick={() => navigate(`/admin/complaint/${complaint.id}`)}>

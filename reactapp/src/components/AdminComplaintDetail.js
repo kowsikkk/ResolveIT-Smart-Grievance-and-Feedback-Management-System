@@ -145,7 +145,8 @@ const AdminComplaintDetail = () => {
 
   const getDaysRemaining = () => {
     const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
-    return (complaint.escalationDays || 30) - daysSinceCreated;
+    const escalationDays = complaint.escalationDays !== null && complaint.escalationDays !== undefined ? complaint.escalationDays : 30;
+    return escalationDays - daysSinceCreated;
   };
 
   const handleSendPrivateMessage = async (e) => {
@@ -234,7 +235,8 @@ const AdminComplaintDetail = () => {
               </span>
               {complaint.status === 'IN PROGRESS' && (
                 <span style={{
-                  background: getDaysRemaining() <= 7 ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
+                  background: getDaysRemaining() < 0 ? 'linear-gradient(135deg, #dc3545, #c82333)' :
+                             getDaysRemaining() <= 7 ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
                              getDaysRemaining() <= 15 ? 'linear-gradient(135deg, #ffc107, #ff9800)' : 
                              'linear-gradient(135deg, #28a745, #20c997)',
                   color: 'white',
@@ -243,7 +245,7 @@ const AdminComplaintDetail = () => {
                   fontSize: '12px',
                   fontWeight: '600'
                 }}>
-                  ⏱️ {getDaysRemaining() > 0 ? `${getDaysRemaining()} days left` : 'ESCALATED'}
+                  ⏱️ {getDaysRemaining() >= 0 ? `${getDaysRemaining()} days left` : 'ESCALATED'}
                 </span>
               )}
             </div>
@@ -368,7 +370,7 @@ const AdminComplaintDetail = () => {
                         type="number" 
                         value={escalationDays} 
                         onChange={(e) => setEscalationDays(parseInt(e.target.value))}
-                        min="1"
+                        min="0"
                         style={{
                           width: '100px',
                           padding: '8px 12px',
@@ -411,17 +413,17 @@ const AdminComplaintDetail = () => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ color: '#a0aec0', fontSize: '14px' }}>Escalation Time:</span>
-                      <span style={{ color: '#f7fafc', fontSize: '16px', fontWeight: '600' }}>{complaint.escalationDays || 30} days</span>
+                      <span style={{ color: '#f7fafc', fontSize: '16px', fontWeight: '600' }}>{complaint.escalationDays !== null && complaint.escalationDays !== undefined ? complaint.escalationDays : 30} days</span>
                     </div>
                     {complaint.status === 'IN PROGRESS' && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ color: '#a0aec0', fontSize: '14px' }}>Time Remaining:</span>
                         <span style={{
-                          color: getDaysRemaining() <= 7 ? '#dc3545' : getDaysRemaining() <= 15 ? '#ffc107' : '#28a745',
+                          color: getDaysRemaining() < 0 ? '#dc3545' : getDaysRemaining() <= 7 ? '#dc3545' : getDaysRemaining() <= 15 ? '#ffc107' : '#28a745',
                           fontSize: '16px',
                           fontWeight: '700'
                         }}>
-                          {getDaysRemaining() > 0 ? `${getDaysRemaining()} days` : 'ESCALATED'}
+                          {getDaysRemaining() >= 0 ? `${getDaysRemaining()} days` : 'ESCALATED'}
                         </span>
                       </div>
                     )}

@@ -14,8 +14,8 @@ const Dashboard = () => {
 
   const isComplaintEscalated = (complaint) => {
     const daysSinceCreated = Math.floor((new Date() - new Date(complaint.createdAt)) / (1000 * 60 * 60 * 24));
-    const escalationDays = complaint.escalationDays || 30;
-    return complaint.status === 'IN PROGRESS' && daysSinceCreated > escalationDays;
+    const escalationDays = complaint.escalationDays !== null && complaint.escalationDays !== undefined ? complaint.escalationDays : 30;
+    return complaint.status === 'IN PROGRESS' && daysSinceCreated >= escalationDays;
   };
 
   useEffect(() => {
